@@ -10,11 +10,9 @@ authors = [
 ]
 description = "Newton Method assignment 1.1"
 readme = "README.md"
-license = { file="LICENSE" }
 requires-python = ">=3.9"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
 dependencies = [
@@ -26,4 +24,4 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/Lejeune-Lab-Graduate-Course-Materials/bisection-method"
+"Homepage" = "https://github.com/K-batonisashvili/ME700/tree/main/Assignment-1-Newtons-Method"

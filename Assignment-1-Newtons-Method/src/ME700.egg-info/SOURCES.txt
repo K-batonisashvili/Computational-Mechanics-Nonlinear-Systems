@@ -1,0 +1,9 @@
+README.md
+pyproject.toml
+src/newton_method.py
+src/test_newton.py
+src/ME700.egg-info/PKG-INFO
+src/ME700.egg-info/SOURCES.txt
+src/ME700.egg-info/dependency_links.txt
+src/ME700.egg-info/requires.txt
+src/ME700.egg-info/top_level.txt

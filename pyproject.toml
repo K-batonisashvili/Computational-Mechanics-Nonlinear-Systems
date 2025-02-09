@@ -1,4 +1,4 @@
-[build-system]
+m[build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
@@ -10,11 +10,9 @@ authors = [
 ]
 description = "bisectionmethod assignment 1"
 readme = "README.md"
-license = { file="LICENSE" }
 requires-python = ">=3.9"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
 dependencies = [
