@@ -7,6 +7,16 @@ Description:    Assignment 1.1 main newtonian math portion. This will be used as
 # Standard Imports
 import numpy as np
 
+
+'''
+Main function for Newtonian Method. We take in the following parameters:
+    eq_functions: The equations that we are solving for. This is a lambda function that takes in x and returns the equations.
+    jacobian: The jacobian of the equations.
+    lower_bound: The lower bound selected by user.
+    upper_bound: The upper bound selected by user.
+    TOL: The tolerance of the solution. This is set to 1e-8 by default, however it is adjustable.
+    ITER: The maximum number of iterations. This is set to 100 by default, however it is adjustable.
+'''
 def newtonian(eq_functions, jacobian, lower_bound, upper_bound, TOL=1e-8, ITER=100):
 
     x = np.array([lower_bound, upper_bound])
