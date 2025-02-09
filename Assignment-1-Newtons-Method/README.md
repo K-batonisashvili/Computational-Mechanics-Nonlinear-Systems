@@ -51,7 +51,9 @@ Thats it!
 There are several different ways that you are encouraged to interact with the code.
 
 1. Jupyter notebook
+
 The included Jupyter notebook is a tutorial notebook which guides you step by step on how the test functions are created, how some cases pass and fail, and how you are able to create your very own tests.
 
 2. Manually Editing Code
-For the more advanced, you may change the code manually within test_newton.py or newton_method.py. There are 2 values which are user-editible. [TOL] and [ITER] which determine to how many decimal places you would like to have a tolerance to, and how many total iterations you would like to run. Both of these adjustments contribute to balancing completion speed and accuracy. 
+
+For the more advanced, you may change the code manually within test_newton.py or newton_method.py. There are 2 values which are user-editible. **'TOL'** and **'ITER'** which determine to how many decimal places you would like to have a tolerance to, and how many total iterations you would like to run. Both of these adjustments contribute to balancing completion speed and accuracy. 
