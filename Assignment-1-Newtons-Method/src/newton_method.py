@@ -18,10 +18,9 @@ def newtonian(eq_functions, jacobian, lower_bound, upper_bound, TOL=1e-8, ITER=1
             Rx = eq_functions(x)
             Jx = jacobian(x)
 
-            if np.linalg.norm(Rx) < tol:    #Checking convergence
+            if np.linalg.norm(Rx) < TOL:    #Checking convergence
                 return x
-
-            delta_x = np.linalg.solve(Jx, -Fx)
-            x = x - delta_x
+            delta_x = np.linalg.solve(Jx, -Rx)
+            x = x + delta_x
             
         raise RuntimeError("Could not converge within iteration limit. Please raise the iterations, or change your upper/lower bounds")

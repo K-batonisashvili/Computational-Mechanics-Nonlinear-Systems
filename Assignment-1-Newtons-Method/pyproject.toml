@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "ME700"
 version = "0.0.0"
 authors = [
-  { name="Kote Batonisashvili", email="kbat6359@bu.edu" },
+    { name = "Kote Batonisashvili", email = "kbat6359@bu.edu" },
 ]
 description = "Newton Method assignment 1.1"
 readme = "README.md"
@@ -24,4 +24,4 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/K-batonisashvili/ME700/tree/main/Assignment-1-Newtons-Method"
+homepage = "https://github.com/K-batonisashvili/ME700/tree/main/Assignment-1-Newtons-Method"
