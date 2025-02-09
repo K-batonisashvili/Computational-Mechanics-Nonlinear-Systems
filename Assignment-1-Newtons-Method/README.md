@@ -3,10 +3,15 @@ This is the continuation of the first assignment where we configured bisection m
 This repo contains this README, newton_method.py, test_newton.py, tutorial.ipynb, pyproject.toml, and the GenAIUSE.txt.
 
 Readme.md is this file, containing instructions.
+
 newton_method.py contains the central math portion of the newtonian algorithm.
+
 test_newton.py contains the test functions to be used with Pytest.
+
 tutorial.ipybn is the jupyter notebook containing guides.
+
 genAIuse.txt contains the statement describing how AI was used for this assignment.
+
 pyproject.toml contains all the requirements for getting the library setup.
 
 
