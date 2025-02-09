@@ -1,3 +1,9 @@
+"""
+Project:        Newton Method
+Author:         Kote Batonisashvili
+Description:    Assignment 1.1 main newtonian math portion. This will be used as an import for pytest and notebook.
+"""
+
 
 import pytest
 import numpy as np
