@@ -1,7 +1,16 @@
-# Assignment # 1 Warm-up: Getting Started + Bisection Method
-The purpose of this document is to demonstrate the functionality of the *bisection method* implemented in the file "bisection_method.py". Test cases are also provided in file "test_bisection.py" to check the code coverage and functioning of the bisection method function. A separate notebook "tutorial.ipynb" is also created to demonstrate the usage of bisection method function.
+# Assignment # 1 Newtonian Method
+This is the continuation of the first assignment where we configured bisection method, except now we are utilizing the newtonian variant of that.
+This repo contains this README, newton_method.py, test_newton.py, tutorial.ipynb, and the GenAIUSE.txt.
+
+Readme.md is this file, containing instructions.
+newton_method.py contains the central math portion of the newtonian algorithm.
+test_newton.py contains the test functions to be used with Pytest.
+tutorial.ipybn is the jupyter notebook containing guides.
+genAIuse.txt contains the statement describing how AI was used for this assignment.
+
+
 ## Getting Started
-User needs to ensure that following files are saved in the same folder (but not in Downloads) before running anything:
+Please make sure these 3 files are all in the same location/folder. They should automatically be there when cloning this repo:
 1. bisection_method.py
 2. test_bisection.py
 3. tutorials.ipynb
