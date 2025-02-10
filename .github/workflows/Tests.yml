@@ -32,7 +32,8 @@ jobs:
       - name: Install test dependencies
         run: pip install pytest pytest-cov
 
-      - name: Run tests with coverage on assignment-1-newtons-method
+      - name: Run tests with coverage
+        working-directory: assignment-1-newtons-method
         run: pytest assignment-1-newtons-method --cov=assignment-1-newtons-method --cov-report=xml
 
       - name: Upload coverage to Codecov
