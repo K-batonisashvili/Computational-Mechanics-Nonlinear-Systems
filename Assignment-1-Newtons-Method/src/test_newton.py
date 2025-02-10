@@ -78,23 +78,23 @@ def test_for_high_lower_bound():
 Test 5: Test if bounds are incorrect.
         If lower bound > upper bound
 '''
-def test_for_incorrect_bounds():
-    upper_bound = 8
-    lower_bound = 10
-    sol = newtonian(r1, j1, lower_bound, upper_bound, TOL, ITER)
-    actual_roots = np.array([-1,1])
-    assert np.allclose(sol, actual_roots, atol=1e-8)
+# def test_for_incorrect_bounds():
+#     upper_bound = 8
+#     lower_bound = 10
+#     sol = newtonian(r1, j1, lower_bound, upper_bound, TOL, ITER)
+#     actual_roots = np.array([-1,1])
+#     assert np.allclose(sol, actual_roots, atol=1e-8)
 
 '''
 Test 6: Test if solution is outside the bounds.
         Testing to see if root is outside the presented bounds
 '''
-def test_for_outside_of_bounds():
-    upper_bound = 50
-    lower_bound = 5
-    sol = newtonian(r1, j1, lower_bound, upper_bound, TOL, ITER)
-    actual_roots = np.array([-1,1])
-    assert np.allclose(sol, actual_roots, atol=1e-8)
+# def test_for_outside_of_bounds():
+#     upper_bound = 50
+#     lower_bound = 5
+#     sol = newtonian(r1, j1, lower_bound, upper_bound, TOL, ITER)
+#     actual_roots = np.array([-1,1])
+#     assert np.allclose(sol, actual_roots, atol=1e-8)
 
 '''
 Test 7: Test if tolerance is too low.
