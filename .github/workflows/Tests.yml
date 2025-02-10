@@ -33,16 +33,14 @@ jobs:
         run: pip install pytest pytest-cov
 
       - name: Run tests with coverage
-        working-directory: ./Assignment-1-Newtons-Method
-        run: pytest --cov=Assignment-1-Newtons-Method --cov-report=xml
+        run: pytest Assignment-1-Newtons-Method --cov=Assignment-1-Newtons-Method --cov-report=xml
 
       - name: Check for coverage.xml
         run: ls
-
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: coverage.xml
+          file: Assignment-1-Newtons-Method/coverage.xml
           fail_ci_if_error: true
