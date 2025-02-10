@@ -37,7 +37,7 @@ jobs:
         run: pytest --cov=Assignment-1-Newtons-Method --cov-report=xml
 
       - name: Check for coverage.xml
-        run: ls -l coverage.xml
+        run: ls
 
 
       - name: Upload coverage to Codecov
