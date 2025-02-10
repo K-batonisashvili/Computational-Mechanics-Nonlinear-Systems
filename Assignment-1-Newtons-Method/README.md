@@ -57,3 +57,8 @@ The included Jupyter notebook is a tutorial notebook which guides you step by st
 2. Manually Editing Code
 
 For the more advanced, you may change the code manually within test_newton.py or newton_method.py. There are 2 values which are user-editible. **TOL** and **ITER** which determine to how many decimal places you would like to have a tolerance to, and how many total iterations you would like to run. Both of these adjustments contribute to balancing completion speed and accuracy. 
+
+
+### NOTE
+
+For the time being, 2 of the 7 tests have been disabled because they need to be re-evaluated.
