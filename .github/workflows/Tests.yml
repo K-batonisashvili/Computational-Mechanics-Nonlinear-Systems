@@ -40,5 +40,5 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.xml
+          file: ./assignment-1-newtons-method/coverage.xml
           fail_ci_if_error: true
