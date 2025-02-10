@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ME700"
+version = "0.0.0"
+authors = [
+    { name = "Kote Batonisashvili", email = "kbat6359@bu.edu" },
+]
+description = "Newton Method assignment 1.1"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "matplotlib==3.10.0",
+    "numpy==1.26.4",
+    "pytest==7.1.2",
+    "pytest-cov==3.0.0",
+    "scipy==1.12.0"
+]
+
+[project.urls]
+homepage = "https://github.com/K-batonisashvili/ME700/tree/main/Assignment-1-Newtons-Method"
