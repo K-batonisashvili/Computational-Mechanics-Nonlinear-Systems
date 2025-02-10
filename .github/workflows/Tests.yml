@@ -37,12 +37,12 @@ jobs:
         run: pytest --cov=Assignment-1-Newtons-Method --cov-report=xml
 
       - name: Check for coverage.xml
-        run: ls -l ./assignment-1-newtons-method/coverage.xml
+        run: ls -l coverage.xml
 
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./assignment-1-newtons-method/coverage.xml
+          file: coverage.xml
           fail_ci_if_error: true
