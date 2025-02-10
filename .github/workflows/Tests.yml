@@ -27,6 +27,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
+        cd assignment-1-newtons-method
         run: pip install -e .
 
       - name: Install test dependencies
