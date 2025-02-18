@@ -39,7 +39,7 @@ jobs:
         run: pytest Assignment-1/Assignment-1-Newtons-Method --cov=Assignment-1/Assignment-1-Newtons-Method --cov-append --cov-report=xml
 
       - name: Run tests with coverage for Elasto-Plastic Method
-        run: pytest Assignment-1/Elasto-Plastic --cov=Assignment-1/Elasto-Plastic --cov-append --cov-report=xml
+        run: pytest Assignment-1/Assignment-1-Elasto-Plastic --cov=Assignment-1/Assignment-1-Elasto-Plastic --cov-append --cov-report=xml
 
       - name: Merge coverage reports
         run: |
