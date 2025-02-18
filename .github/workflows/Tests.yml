@@ -32,20 +32,13 @@ jobs:
       - name: Install test dependencies
         run: pip install pytest pytest-cov coverage
 
-      - name: Check directories for troubleshooting
-        run: ls -la Assignment-1
-
-      - name: Run tests with coverage for Newtons Method
-        run: pytest Assignment-1/Assignment-1-Newtons-Method --cov=Assignment-1.Assignment-1-Newtons-Method --cov-report=term --cov-report=xml
-
-      - name: Run tests with coverage for Elasto-Plastic Method
-        run: pytest Assignment-1/Assignment-1-Elasto-Plastic --cov=Assignment-1.Assignment-1-Elasto-Plastic --cov-report=term --cov-report=xml
+      - name: Run tests with coverage
+        run: pytest Assignment-1 --cov=Assignment-1 --cov-report=xml --cov-report=html
 
       - name: Ensure coverage files exist
         run: |
+          ls -la
           ls -la Assignment-1
-          ls -la 
-          ls -la Assignment-1/Assignment-1-Newtons-Method/src
 
       - name: Upload combined coverage to Codecov
         uses: codecov/codecov-action@v4
