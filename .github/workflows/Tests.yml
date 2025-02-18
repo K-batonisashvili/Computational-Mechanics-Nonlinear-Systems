@@ -42,7 +42,7 @@ jobs:
         run: pytest Assignment-1/Assignment-1-Elasto-Plastic --cov=Assignment-1.Assignment-1-Elasto-Plastic --cov-report=term --cov-report=xml
 
       - name: Ensure coverage files exist
-        run: ls -la
+        run: ls -la Assignment-1
 
       - name: Merge coverage reports
         run: |
