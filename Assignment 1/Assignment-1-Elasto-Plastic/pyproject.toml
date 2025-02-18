@@ -8,7 +8,7 @@ version = "0.0.0"
 authors = [
     { name = "Kote Batonisashvili", email = "kbat6359@bu.edu" },
 ]
-description = "Newton Method assignment 1.1"
+description = "Elasto-Plastic Method assignment 1.2"
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
@@ -24,4 +24,4 @@ dependencies = [
 ]
 
 [project.urls]
-homepage = "https://github.com/K-batonisashvili/ME700/tree/main/Assignment-1-Newtons-Method"
+homepage = "https://github.com/K-batonisashvili/Computational-Mechanics-Nonlinear-Systems/tree/main/Assignment-1-Elasto-Plastic"

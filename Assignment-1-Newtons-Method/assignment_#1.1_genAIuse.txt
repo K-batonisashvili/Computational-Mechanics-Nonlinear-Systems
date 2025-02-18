@@ -1,5 +1,0 @@
-ChatGPT was used for the following things:
-
-1. Proper setup of environment for VS Code + conda on a windows machine to have multiple locaitons and not just SCC.
-2. Root identification for systems of equations
-3. Mathematical alternatives to avoid using deprecated code

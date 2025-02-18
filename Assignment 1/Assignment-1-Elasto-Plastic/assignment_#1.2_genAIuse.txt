@@ -1,0 +1,5 @@
+ChatGPT was used for the following things:
+
+1. Potential Examples to come up with to introduce topic and code
+2. Pytest troubleshooting
+3. Mathematical alternatives and better styling tips
