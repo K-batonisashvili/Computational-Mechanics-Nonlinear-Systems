@@ -3,12 +3,12 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ME700"
+name = "Computational Mechanics ME700"
 version = "0.0.0"
 authors = [
     { name = "Kote Batonisashvili", email = "kbat6359@bu.edu" },
 ]
-description = "Elasto-Plastic Method assignment 1.2"
+description = "Main pyproject file for Computational Mechanics Repo"
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
@@ -24,4 +24,4 @@ dependencies = [
 ]
 
 [project.urls]
-homepage = "https://github.com/K-batonisashvili/Computational-Mechanics-Nonlinear-Systems/tree/main/Assignment-1/Assignment-1-Elasto-Plastic"
+homepage = "https://github.com/K-batonisashvili/Computational-Mechanics-Nonlinear-Systems/tree/main/"
