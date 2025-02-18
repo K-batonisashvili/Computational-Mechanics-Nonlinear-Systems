@@ -45,13 +45,7 @@ jobs:
         run: |
           ls -la Assignment-1
           ls -la 
-          ls -la Assignment-1/Assignment-1-Newtons-Method
-
-      - name: Merge coverage reports
-        run: |
-          coverage combine
-          coverage report
-          coverage xml -o coverage.xml
+          ls -la Assignment-1/Assignment-1-Newtons-Method/src
 
       - name: Upload combined coverage to Codecov
         uses: codecov/codecov-action@v4
