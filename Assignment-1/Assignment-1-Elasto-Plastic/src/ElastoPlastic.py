@@ -8,17 +8,6 @@ Description:    Assignment 1.2 main elasto-plastic math portion. This will be us
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-'''
-Main function for Newtonian Method. We take in the following parameters:
-    eq_functions: The equations that we are solving for. This is a lambda function that takes in x and returns the equations.
-    jacobian: The jacobian of the equations.
-    lower_bound: The lower bound selected by user.
-    upper_bound: The upper bound selected by user.
-    TOL: The tolerance of the solution. This is set to 1e-8 by default, however it is adjustable.
-    ITER: The maximum number of iterations. This is set to 100 by default, however it is adjustable.
-'''
-
 class ElastoPlasticModel:
     def __init__(self, E, Y_initial, H_iso=0.0, H_kin=0.0):
         """
@@ -78,34 +67,3 @@ class ElastoPlasticModel:
                 self.sigma = sigma_trial  # Elastic step
         
         return self.sigma
-
-    def run_simulation(self, strain_increments):
-        """
-        Runs the simulation over the given strain increments and plots the stress-strain curve at the end.
-        :param strain_increments: List or array of strain increments to apply step-wise
-        """
-        stress_values = []
-        strain_values = []
-
-        for delta_eps in strain_increments:
-            stress = self.update_stress(delta_eps)
-            stress_values.append(stress)
-            strain_values.append(self.epsilon_total)
-
-        # Plot the stress-strain curve **after** all iterations
-        plt.figure(figsize=(8, 5))
-        plt.plot(strain_values, stress_values, label='Stress-Strain Curve', color='b')
-        plt.xlabel('Strain')
-        plt.ylabel('Stress')
-        plt.title('Stress vs. Strain')
-        plt.legend()
-        plt.grid(True)
-        plt.show()
-
-# Commented out because it was used for testing
-# # Create an instance of the model
-# model = ElastoPlasticModel(E=1000, Y_initial=10, H_iso=111.111, H_kin=100)
-
-# # Simulate strain increments
-# strain_increments = np.linspace(0, 0.0075, 1000)
-# model.run_simulation(strain_increments)

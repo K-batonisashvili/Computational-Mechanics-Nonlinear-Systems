@@ -1,12 +1,12 @@
 # Assignment # 1 Newtonian Method
 This is the continuation of the first assignment where we configured bisection method, except now we are utilizing the newtonian variant of that.
-This repo contains this README, newton_method.py, test_newton.py, tutorial.ipynb, pyproject.toml, and the GenAIUSE.txt.
+This repo contains this README, ElastoPlastic.py, test_ElastoPlastic.py, tutorial.ipynb, pyproject.toml, and the GenAIUSE.txt.
 
 Readme.md is this file, containing instructions.
 
-newton_method.py contains the central math portion of the newtonian algorithm.
+ElastoPlastic.py contains the central math portion for isotropic and kinematic hardening.
 
-test_newton.py contains the test functions to be used with Pytest.
+test_ElastoPlastic.py contains the test functions to be used with Pytest.
 
 tutorial.ipybn is the jupyter notebook containing guides.
 
@@ -26,12 +26,12 @@ If you do not have conda installed on your computer, I will have a generic conda
 
 Begin by setting up a conda or mamba environment:
 ```bash
-conda create --name newton_method_env python=3.12
+conda create --name elasto-plastic-env python=3.12
 ```
 Once the environment has been created, activate it:
 
 ```bash
-conda activate newton_method_env
+conda activate elasto-plastic-env
 ```
 Double check that python is version 3.12 in the environment:
 ```bash
@@ -56,9 +56,4 @@ The included Jupyter notebook is a tutorial notebook which guides you step by st
 
 2. Manually Editing Code
 
-For the more advanced, you may change the code manually within test_newton.py or newton_method.py. There are 2 values which are user-editible. **TOL** and **ITER** which determine to how many decimal places you would like to have a tolerance to, and how many total iterations you would like to run. Both of these adjustments contribute to balancing completion speed and accuracy. 
-
-
-### NOTE
-
-For the time being, 2 of the 7 tests have been disabled because they need to be re-evaluated.
+For the more advanced, you may change the code manually within ElastoPlastic.py and test_ElastoPlastic.py based on whatever needs you may have. 
