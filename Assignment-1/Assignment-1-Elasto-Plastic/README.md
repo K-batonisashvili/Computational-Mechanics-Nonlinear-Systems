@@ -1,5 +1,6 @@
-# Assignment # 1 Newtonian Method
-This is the continuation of the first assignment where we configured bisection method, except now we are utilizing the newtonian variant of that.
+# Assignment # 1.2 ElastoPlasticity
+This is the continuation of the first assignment where we configured the bisection method and newtons method.
+Now we created a class which stores an Elasto-Plastic material and can be used to show the changes of stress vs strain and how a material undergoes deformation.
 This repo contains this README, ElastoPlastic.py, test_ElastoPlastic.py, tutorial.ipynb, pyproject.toml, and the GenAIUSE.txt.
 
 Readme.md is this file, containing instructions.
