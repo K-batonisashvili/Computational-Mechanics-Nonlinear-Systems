@@ -102,7 +102,7 @@ class ElastoPlasticModel:
         plt.grid(True)
         plt.show()
 
-
+# Commented out because it was used for testing
 # # Create an instance of the model
 # model = ElastoPlasticModel(E=1000, Y_initial=10, H_iso=111.111, H_kin=100)
 
