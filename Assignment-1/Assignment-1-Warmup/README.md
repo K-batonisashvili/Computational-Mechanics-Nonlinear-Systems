@@ -1,7 +1,5 @@
 Hello!
 
-My name is Kote and I created 2 files for the warm-up section of assignment 1.
-
 The first file is called bisection_warm_up.py which contains just the bisection algorithm.
     You can change the following in this file:
         1) Tolerance
