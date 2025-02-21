@@ -1,0 +1,4 @@
+ChatGPT was used for the following things:
+
+1. Index tracking for matrices
+2. Code autofill, for example the self.x = x, self.y = y...
