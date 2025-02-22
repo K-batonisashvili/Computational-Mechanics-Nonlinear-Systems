@@ -33,7 +33,26 @@ class Nodes():
         self.y = y
         self.z = z
 
-    def __nodal_load__(self, Fx, Fy, Fz, Mx, My, Mz):
+          # Initialize default nodal loads to zero
+        self.Fx = 0.0
+        self.Fy = 0.0
+        self.Fz = 0.0
+        self.Mx = 0.0
+        self.My = 0.0
+        self.Mz = 0.0
+
+        # Initialize default displacements to zero
+        self.u = 0.0
+        self.v = 0.0
+        self.w = 0.0
+        self.theta_x = 0.0
+        self.theta_y = 0.0
+        self.theta_z = 0.0
+
+        # Initialize boundary conditions (all DOFs free by default)
+        self.boundary_conditions = np.array([False, False, False, False, False, False])
+
+    def set_nodal_load(self, Fx, Fy, Fz, Mx, My, Mz):
         self.Mz = Mz
         self.My = My
         self.Mx = Mx
@@ -60,7 +79,7 @@ class Nodes():
 
     def set_boundary_constraints(self, constraints: np.ndarray = None):
         if constraints is None:
-            return np.array([False, False, False, False, False, False])
+            self.boundary_conditions = np.array([False, False, False, False, False, False])
         else:
             self.boundary_conditions = constraints
 
@@ -193,7 +212,7 @@ class Elements():
         
         return gamma
     
-    def transformation_matrix_3D(gamma: np.ndarray) -> np.ndarray:
+    def transformation_matrix_3D(self, gamma: np.ndarray) -> np.ndarray:
         """
         3D transformation matrix
         source: Chapter 5.1 of McGuire's Matrix Structural Analysis 2nd Edition
@@ -227,17 +246,28 @@ class Frame():
         Returns:    
                     K -- global stiffness
         """
-        K = np.zeros((len(self.nodes) * 6, len(self.nodes) * 6))
+        num_dofs = len(self.nodes) * 6  # Total number of DOFs
+        K = np.zeros((num_dofs, num_dofs))  # Initialize global stiffness matrix
+
         for element in self.elements:
             gamma = element.rotation_matrix_3D()
-            Transofrmation_Matrix_Gamma = transformation_matrix_3D(gamma)
+            Transformation_Matrix_Gamma = element.transformation_matrix_3D(gamma)
             k_e = self.local_stiffness_matrix(element)
-            k_g = Transofrmation_Matrix_Gamma.T @ k_e @ Transofrmation_Matrix_Gamma
-            K[element.node1 * 6:element.node1 * 6 + 6, element.node1 * 6:element.node1 * 6 + 6] += k_g[0:6, 0:6]
-            K[element.node1 * 6:element.node1 * 6 + 6, element.node2 * 6:element.node2 * 6 + 6] += k_g[0:6, 6:12]
-            K[element.node2 * 6:element.node2 * 6 + 6, element.node1 * 6:element.node1 * 6 + 6] += k_g[6:12, 0:6]
-            K[element.node2 * 6:element.node2 * 6 + 6, element.node2 * 6:element.node2 * 6 + 6] += k_g[6:12, 6:12]
-        
+            k_g = Transformation_Matrix_Gamma.T @ k_e @ Transformation_Matrix_Gamma
+
+            # Get node indices dynamically
+            idx1 = self.nodes.index(element.node1)
+            idx2 = self.nodes.index(element.node2)
+
+            # Convert to DOF indices
+            dof1, dof2 = idx1 * 6, idx2 * 6
+
+            # Assemble global stiffness matrix
+            K[dof1:dof1+6, dof1:dof1+6] += k_g[0:6, 0:6]
+            K[dof1:dof1+6, dof2:dof2+6] += k_g[0:6, 6:12]
+            K[dof2:dof2+6, dof1:dof1+6] += k_g[6:12, 0:6]
+            K[dof2:dof2+6, dof2:dof2+6] += k_g[6:12, 6:12]
+
         # Apply boundary conditions
         for i, node in enumerate(self.nodes):
             for dof, constrained in enumerate(node.boundary_conditions):
@@ -245,9 +275,79 @@ class Frame():
                     index = i * 6 + dof
                     K[index, :] = 0
                     K[:, index] = 0
-                    K[index, index] = 1
-        
+                    K[index, index] = 1  # Set to 1 for stability
+
         return K
+    
+    def global_force_matrix(self):
+        """
+        Assembles the global force matrix F by extracting nodal loads.
+        Returns:
+            F (np.ndarray): The global force matrix.
+        """
+        F = np.zeros(len(self.nodes) * 6)  # Initialize force matrix
+
+        # Assemble global force vector
+        for i, node in enumerate(self.nodes):
+            nodal_loads = node.get_nodal_load()  # Get [Fx, Fy, Fz, Mx, My, Mz]
+            F[i * 6: i * 6 + 6] = nodal_loads  # Assign to correct indices
+
+        return F  # Return the assembled global force matrix
+
+
+    def get_displacements(self, F, K):
+        """
+        Variables:
+                    K -- global stiffness matrix
+                    F -- global force matrix
+                    U -- global displacement matrix
+        Returns:
+                    U -- global displacement matrix
+        """
+        U = np.linalg.solve(K, F)
+        
+        for i, node in enumerate(self.nodes):
+            node.u = U[i * 6]
+            node.v = U[i * 6 + 1]
+            node.w = U[i * 6 + 2]
+            node.theta_x = U[i * 6 + 3]
+            node.theta_y = U[i * 6 + 4]
+            node.theta_z = U[i * 6 + 5]
+
+        return U  # Return displacement vector
+
+
+    def get_reactions(self, U, K):
+        """
+        Variables:
+                    K -- global stiffness matrix
+                    U -- global displacement matrix
+                    F -- global force matrix
+                    R -- global reaction matrix
+        Returns:
+                    R -- global reaction matrix
+        """
+        F = K @ U
+        
+        R = np.zeros_like(F)  # Initialize reaction force vector
+
+        # Extract reaction forces only at constrained DOFs
+        for i, node in enumerate(self.nodes):
+            for dof in range(6):  # Loop through 6 DOFs per node
+                if node.boundary_conditions[dof]:  # If DOF is constrained
+                    index = i * 6 + dof
+                    R[index] = F[index]  # Store reaction force/moment
+
+        return R  # Return reaction forces/moments at supports
+    
+
+    def calculations(self):
+        K = self.global_stiffness_matrix()
+        F = self.global_force_matrix()
+        U = self.get_displacements(F,K)
+        R = self.get_reactions(U, K)
+        return U, R
+    
 
     def plot(self):
         _, ax = plt.subplots()
@@ -259,12 +359,43 @@ class Frame():
         plt.grid(True)
         plt.show()
 
-def main(frame):
+def main():
 
-    frame.nodes[0].set_boundary_conditions([True, True, True, True, True, True])  # Node 0, all DOFs constrained
-    frame.nodes[1].set_boundary_conditions([False, True, True, False, False, False])  # Node 1, some DOFs constrained
-    frame.nodes[2].set_boundary_conditions([False, True, True, False, False, False])  # Node 2, some DOFs constrained
+     # Define Nodes
+    nodes = [
+        Nodes(10, 4, 8),
+        Nodes(-3, 0, 2),
+        Nodes(0, -3, -4)
+    ]
 
-    K = frame.global_stiffness_matrix()
-    K.plot()
+    nodes[2].set_nodal_load(10000, 0, 0, 0, 0, 0)  # 1000N force in X direction
 
+    # Define Elements
+    elements = [
+        Elements(nodes[0], nodes[1], 200e9, 0.3, 0.01, 0.01, 0.01, 0.01, 0.01, [0, 0, 1]),
+        Elements(nodes[1], nodes[2], 200e9, 0.3, 0.01, 0.01, 0.01, 0.01, 0.01, [0, 0, 1])
+    ]
+
+    # Set Boundary Conditions
+    nodes[0].set_boundary_constraints([True, True, True, True, True, True])  # Node 0 fully constrained
+    nodes[1].set_boundary_constraints([False, True, True, False, False, False])  # Node 1 constrained in Y, Z
+    nodes[2].set_boundary_constraints([False, True, True, False, False, False])  # Node 2 constrained in Y, Z
+
+    # Create Frame and Compute Results
+    frame = Frame(nodes, elements)
+    U, R = frame.calculations()
+
+    # Output Results
+    print("\nNodal Displacements & Rotations:")
+    for i, node in enumerate(nodes):
+        print(f"Node {i}: u={U[i * 6]:.6f}, v={U[i * 6 + 1]:.6f}, w={U[i * 6 + 2]:.6f}, "
+                f"θx={U[i * 6 + 3]:.6f}, θy={U[i * 6 + 4]:.6f}, θz={U[i * 6 + 5]:.6f}")
+
+    print("\nReaction Forces & Moments at Supports:")
+    for i, node in enumerate(nodes):
+        if any(node.boundary_conditions):  # Only print for constrained nodes
+            print(f"Node {i}: Fx={R[i * 6]:.2f}, Fy={R[i * 6 + 1]:.2f}, Fz={R[i * 6 + 2]:.2f}, "
+                    f"Mx={R[i * 6 + 3]:.2f}, My={R[i * 6 + 4]:.2f}, Mz={R[i * 6 + 5]:.2f}")
+
+if __name__ == "__main__":
+    main()
