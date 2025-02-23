@@ -16,7 +16,7 @@ def test_node_initialization():
     assert np.array_equal(node.get_displacements(), np.zeros(6)), "Node displacements are not initialized to zero"
 
 def test_element_initialization():
-    """Test that elements are initialized correctly."""
+    """Test that elements are initialized correctly along with their nodes and youngs modulus specifically."""
     node1 = Nodes(0.0, 0.0, 0.0)
     node2 = Nodes(1.0, 0.0, 0.0)
     element = Elements(node1, node2, 200e9, 0.3, 0.01, 0.01, 0.01, 0.01, 0.01, [0, 0, 1])
@@ -25,7 +25,7 @@ def test_element_initialization():
     assert element.E == 200e9, "Element Young's Modulus is incorrect"
 
 def test_global_stiffness_matrix():
-    """Test the global stiffness matrix calculation."""
+    """Test the global stiffness matrix calculations and ensure that the shape is 12x12."""
     nodes = [Nodes(0, 0, 0), Nodes(1, 0, 0)]
     elements = [Elements(nodes[0], nodes[1], 200e9, 0.3, 0.01, 0.01, 0.01, 0.01, 0.01, [0, 0, 1])]
     frame = Frame(nodes, elements)
