@@ -7,7 +7,6 @@ Description:    Assignment 2.1. Direct-Stifness Matrix Method which creates Fram
 # Standard Imports
 import numpy as np
 import matplotlib.pyplot as plt
-from math_utils import * 
 
 
 def check_unit_vector(vec: np.ndarray):
@@ -59,14 +58,6 @@ class Nodes():
         self.Fx = Fx
         self.Fy = Fy
         self.Fz = Fz
-
-    def __nodal_displacement__(self, u, v, w, theta_x, theta_y, theta_z):
-        self.u = u
-        self.v = v
-        self.w = w
-        self.theta_x = theta_x
-        self.theta_y = theta_y
-        self.theta_z = theta_z
 
     def get_nodal_load(self):
         return np.array([self.Fx, self.Fy, self.Fz, self.Mx, self.My, self.Mz])
@@ -350,18 +341,99 @@ class Frame():
     
 
     def plot(self):
-        _, ax = plt.subplots()
+        from mpl_toolkits.mplot3d import Axes3D  # Import for 3D plotting
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        
+        # Plot each element in 3D
         for element in self.elements:
-            ax.plot([element.node1.x, element.node2.x], [element.node1.y, element.node2.y], marker='o')
-        plt.xlabel('X')
-        plt.ylabel('Y')
-        plt.title('Frame Structure')
-        plt.grid(True)
+            x_coords = [element.node1.x, element.node2.x]
+            y_coords = [element.node1.y, element.node2.y]
+            z_coords = [element.node1.z, element.node2.z]
+            ax.plot(x_coords, y_coords, z_coords, marker='o')
+        
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z')
+        ax.set_title('3D Frame Structure')
         plt.show()
+
+def manual_input():
+    """
+    This method allows the user to have pop-up dialog options to manually input values for the nodes and elements.    
+    """
+
+     # Define Nodes
+    while True:
+        try:
+            num_of_nodes = int(input("Enter number of Nodes: "))
+            break
+        except ValueError:
+            print("Invalid input. Please enter an integer value for the number of nodes.")
+
+    nodes = []
+
+    for i in range(num_of_nodes):
+        while True:
+            try:
+                x = float(input(f"Enter x-coordinate for Node {i}: "))
+                y = float(input(f"Enter y-coordinate for Node {i}: "))
+                z = float(input(f"Enter z-coordinate for Node {i}: "))
+                nodes.append(Nodes(x, y, z))
+                break
+            except ValueError:
+                print("Invalid input. Please enter numeric values for the coordinates.")
+
+    # Define Elements
+    elements = []
+    for i in range(2):
+        print(f"Nodes start from 0 to {num_of_nodes - 1}, please enter accordingly.")
+        while True:
+            try:
+                node1 = nodes[int(input(f"Please enter Node 1 for Element {i}: "))]
+                node2 = nodes[int(input(f"Please enter Node 2 for Element {i}: "))]
+                break
+            except (ValueError, IndexError):
+                print("Invalid input. Please enter valid node indices.")
+
+        while True:
+            try:
+                E = float(input(f"Enter Young's Modulus for Element {i}: "))
+                v = float(input(f"Enter Poisson's Ratio for Element {i}: "))
+                A = float(input(f"Enter Area for Element {i}: "))
+                I_z = float(input(f"Enter Inertia about z-axis for Element {i}: "))
+                I_y = float(input(f"Enter Inertia about y-axis for Element {i}: "))
+                I_p = float(input(f"Enter Polar Moment of Inertia for Element {i}: "))
+                J = float(input(f"Enter Torsional Constant for Element {i}: "))
+                local_z_axis = [float(x) for x in input(f"Enter Local z-axis for Element {i}: ").split()]
+                elements.append(Elements(node1, node2, E, v, A, I_z, I_y, I_p, J, local_z_axis))
+                break
+            except ValueError:
+                print("Invalid input. Please enter numeric values for the element properties.")
+
+    # Set Nodal Loads
+    for i in range(num_of_nodes):
+        while True:
+            try:
+                print("For boundary conditions, enter 6 values for each DOF (Fx, Fy, Fz, Mx, My, Mz). Your input will look like this: 1 0 0 0 0 0")
+                constraints = [bool(int(x)) for x in input(f"Enter Boundary Constraints for Node {i} (0 or 1 for each DOF): ").split()]
+                if len(constraints) != 6:
+                    raise ValueError("You must enter exactly 6 values.")
+                nodes[i].set_boundary_constraints(constraints)
+                break
+            except ValueError:
+                print("Invalid input. Please enter 6 binary values (0 or 1) for the boundary constraints.")
+
+    return nodes, elements
+
+
 
 def main():
 
-     # Define Nodes
+    # # User Input for Nodes, Elements, and Boundary Conditions
+    # nodes, elements = manual_input()
+
+    # Define Nodes
     nodes = [
         Nodes(10, 4, 8),
         Nodes(-3, 0, 2),
@@ -396,6 +468,8 @@ def main():
         if any(node.boundary_conditions):  # Only print for constrained nodes
             print(f"Node {i}: Fx={R[i * 6]:.2f}, Fy={R[i * 6 + 1]:.2f}, Fz={R[i * 6 + 2]:.2f}, "
                     f"Mx={R[i * 6 + 3]:.2f}, My={R[i * 6 + 4]:.2f}, Mz={R[i * 6 + 5]:.2f}")
+            
+    frame.plot()
 
 if __name__ == "__main__":
     main()

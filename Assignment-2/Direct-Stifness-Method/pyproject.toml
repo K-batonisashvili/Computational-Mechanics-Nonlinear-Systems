@@ -8,7 +8,7 @@ version = "0.0.0"
 authors = [
     { name = "Kote Batonisashvili", email = "kbat6359@bu.edu" },
 ]
-description = "Direct Stifness Method"
+description = "Direct Stiffness"
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
