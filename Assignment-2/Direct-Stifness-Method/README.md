@@ -1,38 +1,32 @@
-# Assignment # 1.2 ElastoPlasticity
-This is the continuation of the first assignment where we configured the bisection method and newtons method.
-Now we created a class which stores an Elasto-Plastic material and can be used to show the changes of stress vs strain and how a material undergoes deformation.
-This repo contains this README, ElastoPlastic.py, test_ElastoPlastic.py, tutorial.ipynb, pyproject.toml, and the GenAIUSE.txt.
+# Assignment # 2.1 Direct Stiffness Method
+This assignment focuses on implementing the Direct Stiffness Method for structural analysis. We have created a class-based structure to model nodes, elements, and frames, and to perform stiffness matrix calculations.
 
-Readme.md is this file, containing instructions.
+This repo contains this README, Direct_Stiffness.py, test_directstiffness.py, tutorial.ipynb, pyproject.toml, and the GenAIUSE.txt.
 
-ElastoPlastic.py contains the central math portion for isotropic and kinematic hardening.
-
-test_ElastoPlastic.py contains the test functions to be used with Pytest.
-
-tutorial.ipybn is the jupyter notebook containing guides.
-
-genAIuse.txt contains the statement describing how AI was used for this assignment.
-
-pyproject.toml contains all the requirements for getting the library setup.
-
+- `README.md`: This file, containing instructions.
+- `Direct_Stiffness.py`: Contains the main code for the Direct Stiffness Method.
+- `test_directstiffness.py`: Contains the test functions to be used with Pytest.
+- `tutorial.ipynb`: The Jupyter notebook containing guides.
+- `genAIuse.txt`: Contains the statement describing how AI was used for this assignment.
+- `pyproject.toml`: Contains all the requirements for getting the library setup.
 
 ## Getting Started
-When cloning this repo, you will have a general src (source) folder with all the required files within it. readme and pyproject.toml will be in the base directory next to the src folder and that is normal. The rest of setup for this should be fairly straightforward.
+When cloning this repo, you will have a general `src` (source) folder with all the required files within it. `README.md` and `pyproject.toml` will be in the base directory next to the `src` folder and that is normal. The rest of the setup for this should be fairly straightforward.
 
 We are going to create a new conda environment for this code. The reason being it is easier to keep track of all dependencies for how this runs within that conda environment. That way if you need to adjust something on your machine in the future, these installed packages will not mess with anything.
 
-If you do not have conda installed on your computer, I will have a generic conda installation tutorial in the future. For now, please do the following commands do create your conda library.
+If you do not have conda installed on your computer, I will have a generic conda installation tutorial in the future. For now, please follow the commands below to create your conda environment.
 
-## Conda Library Setup
+## Conda Environment Setup
 
 Begin by setting up a conda or mamba environment:
 ```bash
-conda create --name elasto-plastic-env python=3.12
+conda create --name direct-stiffness-env python=3.12
 ```
 Once the environment has been created, activate it:
 
 ```bash
-conda activate elasto-plastic-env
+conda activate direct-stiffness-env
 ```
 Double check that python is version 3.12 in the environment:
 ```bash
@@ -57,4 +51,4 @@ The included Jupyter notebook is a tutorial notebook which guides you step by st
 
 2. Manually Editing Code
 
-For the more advanced, you may change the code manually within ElastoPlastic.py and test_ElastoPlastic.py based on whatever needs you may have. 
+For the more advanced, you may change the code manually within Direct_Stiffness.py and test_directstiffness.py based on whatever needs you may have.

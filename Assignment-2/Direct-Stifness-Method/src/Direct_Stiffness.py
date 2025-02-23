@@ -415,7 +415,7 @@ def manual_input():
     for i in range(num_of_nodes):
         while True:
             try:
-                print("For boundary conditions, enter 6 values for each DOF (Fx, Fy, Fz, Mx, My, Mz). Your input will look like this: 1 0 0 0 0 0")
+                print("For boundary conditions, enter 1 for constrained, or 0 for not. Your input will look like this: 1 0 0 0 0 0")
                 constraints = [bool(int(x)) for x in input(f"Enter Boundary Constraints for Node {i} (0 or 1 for each DOF): ").split()]
                 if len(constraints) != 6:
                     raise ValueError("You must enter exactly 6 values.")
