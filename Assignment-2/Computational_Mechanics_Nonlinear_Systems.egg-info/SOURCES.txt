@@ -1,7 +1,0 @@
-README.md
-pyproject.toml
-Computational_Mechanics_Nonlinear_Systems.egg-info/PKG-INFO
-Computational_Mechanics_Nonlinear_Systems.egg-info/SOURCES.txt
-Computational_Mechanics_Nonlinear_Systems.egg-info/dependency_links.txt
-Computational_Mechanics_Nonlinear_Systems.egg-info/requires.txt
-Computational_Mechanics_Nonlinear_Systems.egg-info/top_level.txt
