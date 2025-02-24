@@ -1,2 +1,0 @@
-newton_method
-test_newton
