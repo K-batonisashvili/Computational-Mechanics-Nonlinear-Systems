@@ -308,7 +308,7 @@ class Frame():
         return U  # Return displacement vector
 
 
-    def get_reactions(self, U, K):
+    def get_reactions(self, U, K, F):
         """
         Variables:
                     K -- global stiffness matrix
@@ -318,8 +318,7 @@ class Frame():
         Returns:
                     R -- global reaction matrix
         """
-        F = K @ U
-        
+      
         R = np.zeros_like(F)  # Initialize reaction force vector
 
         # Extract reaction forces only at constrained DOFs
@@ -334,9 +333,12 @@ class Frame():
 
     def calculations(self):
         K = self.global_stiffness_matrix()
+        print(f"global stifness matrix: {K}")
         F = self.global_force_matrix()
+        print(f"global force matrix: {F}")
         U = self.get_displacements(F,K)
-        R = self.get_reactions(U, K)
+        print(f"displacements: {U}")
+        R = self.get_reactions(U, K, F)
         return U, R
     
 
@@ -428,28 +430,63 @@ def manual_input():
 
 
 
-# def main():
+def main():
 
-#     # User Input for Nodes, Elements, and Boundary Conditions
-#     nodes, elements = manual_input()
+    # # User Input for Nodes, Elements, and Boundary Conditions
+    # nodes, elements = manual_input()
 
-#     # Create Frame and Compute Results
-#     frame = Frame(nodes, elements)
-#     U, R = frame.calculations()
+    # Define Nodes
+    nodes = []
+    nodes.append(Nodes(0.0, 0.0, 0.0))
+    nodes.append(Nodes(-5.0, 1.0, 10.0))
+    nodes.append(Nodes(-1.0, 5.0, 13.0))
+    nodes.append(Nodes(-3.0, 7.0, 11.0))
+    nodes.append(Nodes(6.0, 9.0, 5.0))
 
-#     # Output Results
-#     print("\nNodal Displacements & Rotations:")
-#     for i, node in enumerate(nodes):
-#         print(f"Node {i}: u={U[i * 6]:.6f}, v={U[i * 6 + 1]:.6f}, w={U[i * 6 + 2]:.6f}, "
-#                 f"θx={U[i * 6 + 3]:.6f}, θy={U[i * 6 + 4]:.6f}, θz={U[i * 6 + 5]:.6f}")
+    # Apply boundary conditions
+    nodes[0].set_boundary_constraints([False, False, True, True, True, True])  # Node 1 fully constrained
+    nodes[1].set_boundary_constraints([False, False, False, False, False, False])  # Node 2 constrained in Y, Z
+    nodes[2].set_boundary_constraints([False, False, False, False, False, False])  # Node 2 constrained in Y, Z
+    nodes[3].set_boundary_constraints([True, True, True, True, True, True])  # Node 2 constrained in Y, Z
+    nodes[4].set_boundary_constraints([True, True, True, False, False, False])  # Node 2 constrained in Y, Z
 
-#     print("\nReaction Forces & Moments at Supports:")
-#     for i, node in enumerate(nodes):
-#         if any(node.boundary_conditions):  # Only print for constrained nodes
-#             print(f"Node {i}: Fx={R[i * 6]:.2f}, Fy={R[i * 6 + 1]:.2f}, Fz={R[i * 6 + 2]:.2f}, "
-#                     f"Mx={R[i * 6 + 3]:.2f}, My={R[i * 6 + 4]:.2f}, Mz={R[i * 6 + 5]:.2f}")
+
+    nodes[2].set_nodal_load(0.1, -0.05, -0.075, 0.5, -0.1, 0.3)
+
+    # Define Elements
+    E = 500  # Young's Modulus in Pascals
+    v = 0.3  # Poisson's Ratio
+    A = (np.pi)  # Cross-sectional Area in square meters
+    I_z = (np.pi/4)  # Moment of Inertia about z-axis in meters^4
+    I_y = (np.pi/4)  # Moment of Inertia about y-axis in meters^4
+    I_p = (np.pi/2)  # Polar Moment of Inertia in meters^4
+    J = (np.pi/2)  # Torsional Constant in meters^4
+    local_z_axis = [0, 0, 1]  # Local z-axis direction
+
+    elements = []
+    elements.append(Elements(nodes[0], nodes[1], E, v, A, I_z, I_y, I_p, J, local_z_axis))
+    elements.append(Elements(nodes[1], nodes[2], E, v, A, I_z, I_y, I_p, J, local_z_axis))
+    elements.append(Elements(nodes[3], nodes[2], E, v, A, I_z, I_y, I_p, J, local_z_axis))
+    elements.append(Elements(nodes[2], nodes[4], E, v, A, I_z, I_y, I_p, J, local_z_axis))
+
+
+    # Create Frame and Compute Results
+    frame = Frame(nodes, elements)
+    U, R = frame.calculations()
+
+    # Output Results
+    print("\nNodal Displacements & Rotations:")
+    for i, node in enumerate(nodes):
+        print(f"Node {i}: u={U[i * 6]:.6f}, v={U[i * 6 + 1]:.6f}, w={U[i * 6 + 2]:.6f}, "
+                f"θx={U[i * 6 + 3]:.6f}, θy={U[i * 6 + 4]:.6f}, θz={U[i * 6 + 5]:.6f}")
+
+    print("\nReaction Forces & Moments at Supports:")
+    for i, node in enumerate(nodes):
+        if any(node.boundary_conditions):  # Only print for constrained nodes
+            print(f"Node {i}: Fx={R[i * 6]:.2f}, Fy={R[i * 6 + 1]:.2f}, Fz={R[i * 6 + 2]:.2f}, "
+                    f"Mx={R[i * 6 + 3]:.2f}, My={R[i * 6 + 4]:.2f}, Mz={R[i * 6 + 5]:.2f}")
             
-#     frame.plot()
+    frame.plot()
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    main()
