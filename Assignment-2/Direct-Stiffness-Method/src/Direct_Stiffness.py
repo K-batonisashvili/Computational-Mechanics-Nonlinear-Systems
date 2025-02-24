@@ -428,48 +428,28 @@ def manual_input():
 
 
 
-def main():
+# def main():
 
-    # # User Input for Nodes, Elements, and Boundary Conditions
-    # nodes, elements = manual_input()
+#     # User Input for Nodes, Elements, and Boundary Conditions
+#     nodes, elements = manual_input()
 
-    # Define Nodes
-    nodes = [
-        Nodes(10, 4, 8),
-        Nodes(-3, 0, 2),
-        Nodes(0, -3, -4)
-    ]
+#     # Create Frame and Compute Results
+#     frame = Frame(nodes, elements)
+#     U, R = frame.calculations()
 
-    nodes[2].set_nodal_load(10000, 0, 0, 0, 0, 0)  # 1000N force in X direction
+#     # Output Results
+#     print("\nNodal Displacements & Rotations:")
+#     for i, node in enumerate(nodes):
+#         print(f"Node {i}: u={U[i * 6]:.6f}, v={U[i * 6 + 1]:.6f}, w={U[i * 6 + 2]:.6f}, "
+#                 f"θx={U[i * 6 + 3]:.6f}, θy={U[i * 6 + 4]:.6f}, θz={U[i * 6 + 5]:.6f}")
 
-    # Define Elements
-    elements = [
-        Elements(nodes[0], nodes[1], 200e9, 0.3, 0.01, 0.01, 0.01, 0.01, 0.01, [0, 0, 1]),
-        Elements(nodes[1], nodes[2], 200e9, 0.3, 0.01, 0.01, 0.01, 0.01, 0.01, [0, 0, 1])
-    ]
-
-    # Set Boundary Conditions
-    nodes[0].set_boundary_constraints([True, True, True, True, True, True])  # Node 0 fully constrained
-    nodes[1].set_boundary_constraints([False, True, True, False, False, False])  # Node 1 constrained in Y, Z
-    nodes[2].set_boundary_constraints([False, True, True, False, False, False])  # Node 2 constrained in Y, Z
-
-    # Create Frame and Compute Results
-    frame = Frame(nodes, elements)
-    U, R = frame.calculations()
-
-    # Output Results
-    print("\nNodal Displacements & Rotations:")
-    for i, node in enumerate(nodes):
-        print(f"Node {i}: u={U[i * 6]:.6f}, v={U[i * 6 + 1]:.6f}, w={U[i * 6 + 2]:.6f}, "
-                f"θx={U[i * 6 + 3]:.6f}, θy={U[i * 6 + 4]:.6f}, θz={U[i * 6 + 5]:.6f}")
-
-    print("\nReaction Forces & Moments at Supports:")
-    for i, node in enumerate(nodes):
-        if any(node.boundary_conditions):  # Only print for constrained nodes
-            print(f"Node {i}: Fx={R[i * 6]:.2f}, Fy={R[i * 6 + 1]:.2f}, Fz={R[i * 6 + 2]:.2f}, "
-                    f"Mx={R[i * 6 + 3]:.2f}, My={R[i * 6 + 4]:.2f}, Mz={R[i * 6 + 5]:.2f}")
+#     print("\nReaction Forces & Moments at Supports:")
+#     for i, node in enumerate(nodes):
+#         if any(node.boundary_conditions):  # Only print for constrained nodes
+#             print(f"Node {i}: Fx={R[i * 6]:.2f}, Fy={R[i * 6 + 1]:.2f}, Fz={R[i * 6 + 2]:.2f}, "
+#                     f"Mx={R[i * 6 + 3]:.2f}, My={R[i * 6 + 4]:.2f}, Mz={R[i * 6 + 5]:.2f}")
             
-    frame.plot()
+#     frame.plot()
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
