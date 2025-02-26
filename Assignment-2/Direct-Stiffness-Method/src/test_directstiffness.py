@@ -44,9 +44,21 @@ def test_displacements():
     elements = [Elements(nodes[0], nodes[1], 200e9, 0.3, 0.01, 0.01, 0.01, 0.01, 0.01, [0, 0, 1])]
     frame = Frame(nodes, elements)
     nodes[0].set_boundary_constraints([True, True, True, True, True, True])
+    nodes[1].set_boundary_constraints([False, True, True, False, False, False])
     nodes[1].set_nodal_load(1000, 0, 0, 0, 0, 0)
     K = frame.global_stiffness_matrix()
     F = frame.global_force_matrix()
+
+    # Apply boundary conditions
+    for i, node in enumerate(nodes):
+        for dof, constrained in enumerate(node.boundary_conditions):
+            if constrained:
+                index = i * 6 + dof
+                K[index, :] = 0
+                K[:, index] = 0
+                K[index, index] = 1  # Keep diagonal entry for numerical stability
+                F[index] = 0  # Ensure force vector correctly handles constraints
+
     U = frame.get_displacements(F, K)
     assert U.shape == (12,), "Displacement vector size is incorrect"
 
@@ -56,11 +68,23 @@ def test_reactions():
     elements = [Elements(nodes[0], nodes[1], 200e9, 0.3, 0.01, 0.01, 0.01, 0.01, 0.01, [0, 0, 1])]
     frame = Frame(nodes, elements)
     nodes[0].set_boundary_constraints([True, True, True, True, True, True])
+    nodes[1].set_boundary_constraints([False, True, True, False, False, False])
     nodes[1].set_nodal_load(1000, 0, 0, 0, 0, 0)
     K = frame.global_stiffness_matrix()
     F = frame.global_force_matrix()
+
+    # Apply boundary conditions
+    for i, node in enumerate(nodes):
+        for dof, constrained in enumerate(node.boundary_conditions):
+            if constrained:
+                index = i * 6 + dof
+                K[index, :] = 0
+                K[:, index] = 0
+                K[index, index] = 1  # Keep diagonal entry for numerical stability
+                F[index] = 0  # Ensure force vector correctly handles constraints
+
     U = frame.get_displacements(F, K)
-    R = frame.get_reactions(U, K)
+    R = frame.get_reactions(U, K, F)
     assert R.shape == (12,), "Reaction force vector size is incorrect"
 
 if __name__ == "__main__":

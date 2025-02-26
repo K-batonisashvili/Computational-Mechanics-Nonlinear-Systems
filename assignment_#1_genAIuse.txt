@@ -1,2 +1,0 @@
-ChatGPT was used in different ways for each assignment
-Please find an additional assignment_#_genAIuse.txt in each individual subfolder.
