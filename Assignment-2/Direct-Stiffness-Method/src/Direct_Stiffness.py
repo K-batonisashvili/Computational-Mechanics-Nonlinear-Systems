@@ -155,7 +155,7 @@ class Elements():
         return k_e
     
 
-    def rotation_matrix_3D(self, v_temp: np.ndarray = None) -> np.ndarray:
+    def rotation_matrix_3D(self) -> np.ndarray:
         """
         3D rotation matrix
         source: Chapter 5.1 of McGuire's Matrix Structural Analysis 2nd Edition
@@ -176,29 +176,20 @@ class Elements():
         nxp = (z2 - z1) / L
         local_x = np.asarray([lxp, mxp, nxp])
 
-        # choose a vector to orthonormalize the y axis if one is not given
-        if v_temp is None:
-            # if the beam is oriented vertically, switch to the global y axis
-            if np.isclose(lxp, 0.0) and np.isclose(mxp, 0.0):
-                v_temp = np.array([0, 1.0, 0.0])
-            else:
-                # otherwise use the global z axis
-                v_temp = np.array([0, 0, 1.0])
-        else:
-            # check to make sure that given v_temp is a unit vector
-            check_unit_vector(v_temp)
-            # check to make sure that given v_temp is not parallel to the local x axis
-            check_parallel(local_x, v_temp)
+        # Use the provided local_z_axis
+        v_temp = self.local_z_axis
+        check_unit_vector(v_temp)
+        check_parallel(local_x, v_temp)
         
-        # compute the local y axis
+        # Compute the local y-axis
         local_y = np.cross(v_temp, local_x)
         local_y = local_y / np.linalg.norm(local_y)
 
-        # compute the local z axis
+        # Compute the local z-axis
         local_z = np.cross(local_x, local_y)
         local_z = local_z / np.linalg.norm(local_z)
 
-        # assemble R
+        # Assemble rotation matrix
         gamma = np.vstack((local_x, local_y, local_z))
         
         return gamma
@@ -259,15 +250,6 @@ class Frame():
             K[dof2:dof2+6, dof1:dof1+6] += k_g[6:12, 0:6]
             K[dof2:dof2+6, dof2:dof2+6] += k_g[6:12, 6:12]
 
-        # Apply boundary conditions
-        for i, node in enumerate(self.nodes):
-            for dof, constrained in enumerate(node.boundary_conditions):
-                if constrained:
-                    index = i * 6 + dof
-                    K[index, :] = 0
-                    K[:, index] = 0
-                    K[index, index] = 1  # Set to 1 for stability
-
         return K
     
     def global_force_matrix(self):
@@ -308,37 +290,46 @@ class Frame():
         return U  # Return displacement vector
 
 
-    def get_reactions(self, U, K, F):
+    def get_reactions(self, U, original_K, F):
         """
         Variables:
                     K -- global stiffness matrix
                     U -- global displacement matrix
                     F -- global force matrix
-                    R -- global reaction matrix
         Returns:
                     R -- global reaction matrix
         """
       
-        R = np.zeros_like(F)  # Initialize reaction force vector
-
-        # Extract reaction forces only at constrained DOFs
+        R = original_K  @ U - F  # Compute full reaction force vector
+        
+        # Zero out reactions at free DOFs
         for i, node in enumerate(self.nodes):
-            for dof in range(6):  # Loop through 6 DOFs per node
-                if node.boundary_conditions[dof]:  # If DOF is constrained
-                    index = i * 6 + dof
-                    R[index] = F[index]  # Store reaction force/moment
+            for dof in range(6):  # Loop through all 6 DOFs per node
+                if not node.boundary_conditions[dof]:  # If DOF is not constrained
+                    R[i * 6 + dof] = 0  # Ensure reaction force is zero
 
         return R  # Return reaction forces/moments at supports
     
 
     def calculations(self):
-        K = self.global_stiffness_matrix()
-        print(f"global stifness matrix: {K}")
+        original_K = self.global_stiffness_matrix()  # Save unmodified stiffness matrix
+        K = original_K.copy()  # Copy to apply boundary conditions
         F = self.global_force_matrix()
-        print(f"global force matrix: {F}")
-        U = self.get_displacements(F,K)
-        print(f"displacements: {U}")
-        R = self.get_reactions(U, K, F)
+
+        # Apply boundary conditions
+        for i, node in enumerate(self.nodes):
+            for dof, constrained in enumerate(node.boundary_conditions):
+                if constrained:
+                    index = i * 6 + dof
+                    K[index, :] = 0
+                    K[:, index] = 0
+                    K[index, index] = 1  # Keep diagonal entry for numerical stability
+                    F[index] = 0  # Ensure force vector correctly handles constraints
+
+
+        U = self.get_displacements(F, K)        
+        R = self.get_reactions(U, original_K, F)  # Use original K
+    
         return U, R
     
 
@@ -430,63 +421,11 @@ def manual_input():
 
 
 
-def main():
+# def main():
 
-    # # User Input for Nodes, Elements, and Boundary Conditions
-    # nodes, elements = manual_input()
-
-    # Define Nodes
-    nodes = []
-    nodes.append(Nodes(0.0, 0.0, 0.0))
-    nodes.append(Nodes(-5.0, 1.0, 10.0))
-    nodes.append(Nodes(-1.0, 5.0, 13.0))
-    nodes.append(Nodes(-3.0, 7.0, 11.0))
-    nodes.append(Nodes(6.0, 9.0, 5.0))
-
-    # Apply boundary conditions
-    nodes[0].set_boundary_constraints([False, False, True, True, True, True])  # Node 1 fully constrained
-    nodes[1].set_boundary_constraints([False, False, False, False, False, False])  # Node 2 constrained in Y, Z
-    nodes[2].set_boundary_constraints([False, False, False, False, False, False])  # Node 2 constrained in Y, Z
-    nodes[3].set_boundary_constraints([True, True, True, True, True, True])  # Node 2 constrained in Y, Z
-    nodes[4].set_boundary_constraints([True, True, True, False, False, False])  # Node 2 constrained in Y, Z
+#     # # User Input for Nodes, Elements, and Boundary Conditions
+#     # nodes, elements = manual_input()
 
 
-    nodes[2].set_nodal_load(0.1, -0.05, -0.075, 0.5, -0.1, 0.3)
-
-    # Define Elements
-    E = 500  # Young's Modulus in Pascals
-    v = 0.3  # Poisson's Ratio
-    A = (np.pi)  # Cross-sectional Area in square meters
-    I_z = (np.pi/4)  # Moment of Inertia about z-axis in meters^4
-    I_y = (np.pi/4)  # Moment of Inertia about y-axis in meters^4
-    I_p = (np.pi/2)  # Polar Moment of Inertia in meters^4
-    J = (np.pi/2)  # Torsional Constant in meters^4
-    local_z_axis = [0, 0, 1]  # Local z-axis direction
-
-    elements = []
-    elements.append(Elements(nodes[0], nodes[1], E, v, A, I_z, I_y, I_p, J, local_z_axis))
-    elements.append(Elements(nodes[1], nodes[2], E, v, A, I_z, I_y, I_p, J, local_z_axis))
-    elements.append(Elements(nodes[3], nodes[2], E, v, A, I_z, I_y, I_p, J, local_z_axis))
-    elements.append(Elements(nodes[2], nodes[4], E, v, A, I_z, I_y, I_p, J, local_z_axis))
-
-
-    # Create Frame and Compute Results
-    frame = Frame(nodes, elements)
-    U, R = frame.calculations()
-
-    # Output Results
-    print("\nNodal Displacements & Rotations:")
-    for i, node in enumerate(nodes):
-        print(f"Node {i}: u={U[i * 6]:.6f}, v={U[i * 6 + 1]:.6f}, w={U[i * 6 + 2]:.6f}, "
-                f"θx={U[i * 6 + 3]:.6f}, θy={U[i * 6 + 4]:.6f}, θz={U[i * 6 + 5]:.6f}")
-
-    print("\nReaction Forces & Moments at Supports:")
-    for i, node in enumerate(nodes):
-        if any(node.boundary_conditions):  # Only print for constrained nodes
-            print(f"Node {i}: Fx={R[i * 6]:.2f}, Fy={R[i * 6 + 1]:.2f}, Fz={R[i * 6 + 2]:.2f}, "
-                    f"Mx={R[i * 6 + 3]:.2f}, My={R[i * 6 + 4]:.2f}, Mz={R[i * 6 + 5]:.2f}")
-            
-    frame.plot()
-
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
