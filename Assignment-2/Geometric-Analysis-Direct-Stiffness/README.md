@@ -27,7 +27,7 @@ conda create --name geometric-stiffness-env python=3.12
 Once the environment has been created, activate it:
 
 ```bash
-conda activate direct-stiffness-env
+conda activate geometric-stiffness-env
 ```
 Double check that python is version 3.12 in the environment:
 ```bash
