@@ -7,6 +7,8 @@ Description:    Assignment 2.1. Direct-Stifness Matrix Method which creates Fram
 # Standard Imports
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy
+from scipy.linalg import eigh
 
 
 def check_unit_vector(vec: np.ndarray):
@@ -86,8 +88,7 @@ class Elements():
         self.I_p = I_p      # Polar moment of inertia
         self.J = J          # Torsional Constant
         self.local_z_axis = local_z_axis
-
-   
+    
     def local_geometric_stiffness_matrix_3D_beam(self) -> np.ndarray:
         """
         local element geometric stiffness matrix
@@ -111,8 +112,12 @@ class Elements():
         Fx2, Fy2, Fz2, Mx2, My2, Mz2 = self.node2.get_nodal_load()
 
         L = np.linalg.norm(self.node1.get_coordinates() - self.node2.get_coordinates())
+        A = self.A
+        I_rho = self.I_p
+
         k_g = np.zeros((12, 12))
-        # upper triangle off diagonal terms
+        
+        # Upper triangle off-diagonal terms
         k_g[0, 6] = -Fx2 / L
         k_g[1, 3] = My1 / L
         k_g[1, 4] = Mx2 / L
@@ -132,7 +137,7 @@ class Elements():
         k_g[3, 5] = (2.0 * My1 - My2) / 6.0
         k_g[3, 7] = -My1 / L
         k_g[3, 8] = -Mz1 / L
-        k_g[3, 9] = -Fx2 * self.I_p  / (self.A * L)
+        k_g[3, 9] = -Fx2 * I_rho / (A * L)
         k_g[3, 10] = -1.0 * (Mz1 + Mz2) / 6.0
         k_g[3, 11] = (My1 + My2) / 6.0
         k_g[4, 7] = -Mx2 / L
@@ -153,22 +158,28 @@ class Elements():
         k_g[8, 11] = Mx2 / L
         k_g[9, 10] = (Mz1 - 2.0 * Mz2) / 6.0
         k_g[9, 11] = -1.0 * (My1 - 2.0 * My2) / 6.0
-        # add in the symmetric lower triangle
-        k_g = k_g + k_g.transpose()
-        # add diagonal terms
+        
+        # Add in the symmetric lower triangle
+        k_g = k_g + k_g.T - np.diag(k_g.diagonal())
+        
+        # Add diagonal terms
         k_g[0, 0] = Fx2 / L
         k_g[1, 1] = 6.0 * Fx2 / (5.0 * L)
         k_g[2, 2] = 6.0 * Fx2 / (5.0 * L)
-        k_g[3, 3] = Fx2 * self.I_p  / (self.A * L)
+        k_g[3, 3] = Fx2 * I_rho / (A * L)
         k_g[4, 4] = 2.0 * Fx2 * L / 15.0
         k_g[5, 5] = 2.0 * Fx2 * L / 15.0
         k_g[6, 6] = Fx2 / L
         k_g[7, 7] = 6.0 * Fx2 / (5.0 * L)
         k_g[8, 8] = 6.0 * Fx2 / (5.0 * L)
-        k_g[9, 9] = Fx2 * self.I_p  / (self.A * L)
+        k_g[9, 9] = Fx2 * I_rho / (A * L)
         k_g[10, 10] = 2.0 * Fx2 * L / 15.0
         k_g[11, 11] = 2.0 * Fx2 * L / 15.0
-        
+
+        # Regularize the matrix by adding a small positive value to the diagonal
+        epsilon = 1e-6
+        k_g += epsilon * np.eye(k_g.shape[0])
+
         return k_g
 
     def local_elastic_stiffness_matrix_3D_beam(self) -> np.ndarray:
@@ -239,6 +250,8 @@ class Elements():
         return k_e
     
 
+    
+
     def rotation_matrix_3D(self) -> np.ndarray:
         """
         3D rotation matrix
@@ -303,6 +316,9 @@ class Frame():
     def local_stiffness_matrix(self, element):
         return element.local_elastic_stiffness_matrix_3D_beam()
     
+    def local_geometric_stiffness_matrix(self, element):
+        return element.local_geometric_stiffness_matrix_3D_beam()
+    
     def global_stiffness_matrix(self):
         """
         Variables:
@@ -334,7 +350,71 @@ class Frame():
             K[dof2:dof2+6, dof1:dof1+6] += k_g[6:12, 0:6]
             K[dof2:dof2+6, dof2:dof2+6] += k_g[6:12, 6:12]
 
+            # Apply boundary conditions to K
+            for i, node in enumerate(self.nodes):
+                for dof, constrained in enumerate(node.boundary_conditions):
+                    if constrained:
+                        index = i * 6 + dof
+                        K[index, :] = 0
+                        K[:, index] = 0
+                        K[index, index] = 1
+            
         return K
+    
+    def global_geometric_stiffness_matrix(self):
+        num_dofs = len(self.nodes) * 6  # Total number of DOFs
+        Kg = np.zeros((num_dofs, num_dofs))  # Initialize global geometric stiffness matrix
+
+        for element in self.elements:
+            gamma = element.rotation_matrix_3D()
+            Transformation_Matrix_Gamma = element.transformation_matrix_3D(gamma)
+            k_g_local = self.local_geometric_stiffness_matrix(element)
+            k_g = Transformation_Matrix_Gamma.T @ k_g_local @ Transformation_Matrix_Gamma
+
+            # Get node indices dynamically
+            idx1 = self.nodes.index(element.node1)
+            idx2 = self.nodes.index(element.node2)
+
+            # Convert to DOF indices
+            dof1, dof2 = idx1 * 6, idx2 * 6
+
+            # Assemble global geometric stiffness matrix
+            Kg[dof1:dof1+6, dof1:dof1+6] += k_g[0:6, 0:6]
+            Kg[dof1:dof1+6, dof2:dof2+6] += k_g[0:6, 6:12]
+            Kg[dof2:dof2+6, dof1:dof1+6] += k_g[6:12, 0:6]
+            Kg[dof2:dof2+6, dof2:dof2+6] += k_g[6:12, 6:12]
+
+        # Apply boundary conditions to Kg
+        for i, node in enumerate(self.nodes):
+            for dof, constrained in enumerate(node.boundary_conditions):
+                if constrained:
+                    index = i * 6 + dof
+                    Kg[index, :] = 0
+                    Kg[:, index] = 0
+                    Kg[index, index] = 1
+
+
+        return Kg
+
+    def elastic_critical_load(self):
+        K = self.global_stiffness_matrix()
+        Kg = self.global_geometric_stiffness_matrix()
+
+        # Apply boundary conditions to K and Kg
+        K, Kg = self.apply_boundary_conditions(K, Kg)
+
+        # Solve the generalized eigenvalue problem
+        eigenvalues, eigenvectors = scipy.linalg.eig(K, Kg)
+
+        # Ensure that there are positive eigenvalues
+        positive_eigenvalues = eigenvalues[eigenvalues > 0]
+        if positive_eigenvalues.size == 0:
+            raise ValueError("No positive eigenvalues found. The system may be unstable or improperly defined.")
+
+        # Find the smallest positive eigenvalue
+        critical_load_factor = np.min(positive_eigenvalues)
+
+        return critical_load_factor
     
     def global_force_matrix(self):
         """
@@ -447,6 +527,18 @@ class Frame():
 
         return internal_forces
     
+    def apply_boundary_conditions(self, K, Kg):
+        for i, node in enumerate(self.nodes):
+            for dof, constrained in enumerate(node.boundary_conditions):
+                if constrained:
+                    index = i * 6 + dof
+                    K[index, :] = 0
+                    K[:, index] = 0
+                    K[index, index] = 1
+                    Kg[index, :] = 0
+                    Kg[:, index] = 0
+                    Kg[index, index] = 1
+        return K, Kg
 
     def plot(self):
         """
@@ -477,17 +569,25 @@ class Frame():
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
 
-        # Plot each element in 3D
+        # Plot original shape
+        for element in self.elements:
+            x_coords = [element.node1.x, element.node2.x]
+            y_coords = [element.node1.y, element.node2.y]
+            z_coords = [element.node1.z, element.node2.z]
+            ax.plot(x_coords, y_coords, z_coords, marker='o', color='blue', label='Original' if element == self.elements[0] else "")
+
+        # Plot deformed shape
         for element in self.elements:
             x_coords = [element.node1.x + element.node1.u, element.node2.x + element.node2.u]
             y_coords = [element.node1.y + element.node1.v, element.node2.y + element.node2.v]
             z_coords = [element.node1.z + element.node1.w, element.node2.z + element.node2.w]
-            ax.plot(x_coords, y_coords, z_coords, marker='o')
+            ax.plot(x_coords, y_coords, z_coords, marker='o', color='red', label='Deformed' if element == self.elements[0] else "")
 
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
         ax.set_zlabel('Z')
-        ax.set_title('3D Frame Structure (Deformed)')
+        ax.set_title('3D Frame Structure (Original and Deformed)')
+        ax.legend()
         plt.show()
 
     def plot_internal_forces(self):
