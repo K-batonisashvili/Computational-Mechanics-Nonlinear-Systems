@@ -70,11 +70,11 @@ class Nodes():
     def get_displacements(self):
         return np.array([self.u, self.v, self.w, self.theta_x, self.theta_y, self.theta_z])
 
-    def set_boundary_constraints(self, constraints: np.ndarray = None):
+    def set_boundary_constraints(self, constraints=None):
         if constraints is None:
-            self.boundary_conditions = np.array([False, False, False, False, False, False])
+            self.boundary_conditions = np.array([False, False, False, False, False, False], dtype=bool)
         else:
-            self.boundary_conditions = constraints
+            self.boundary_conditions = np.array(constraints, dtype=bool)  # Ensure NumPy array
 
 class Elements():
     def __init__(self, node1, node2, E, v, A, I_z, I_y, I_p, J, local_z_axis=None):
@@ -96,15 +96,16 @@ class Elements():
         """
         # Local x-axis: unit vector along the element
         local_x = self.node2.get_coordinates() - self.node1.get_coordinates()
+        local_x = local_x.astype(np.float64)  
         local_x /= np.linalg.norm(local_x)  # Normalize
 
         # Choose a reference z-axis (default: global Z)
         if local_z_axis is None:
-            local_z_axis = np.array([0, 0, 1])
+            local_z_axis = np.array([0, 0, 1], dtype=np.float64)
 
         # If local_x is parallel to local_z_axis, pick another reference axis
         if np.isclose(np.linalg.norm(np.cross(local_x, local_z_axis)), 0.0):
-            local_z_axis = np.array([0, 1, 0])  # Use global Y instead
+            local_z_axis = np.array([0, 1, 0], dtype=np.float64)  # Use global Y instead
         
         # Compute local y-axis as cross product of local_z and local_x
         local_y = np.cross(local_z_axis, local_x)
