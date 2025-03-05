@@ -33,7 +33,7 @@ jobs:
         run: pip install pytest pytest-cov coverage
 
       - name: Run tests with coverage for assignment 1
-        run: pytest Assignment-1 --cov=Assignment-1 --cov-report=xml --cov-report=html
+        run: pytest Assignment-1 -v --cov=Assignment-1 --cov-report=xml --cov-report=html
 
       - name: Upload combined coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -43,7 +43,7 @@ jobs:
           fail_ci_if_error: true
 
       - name: Run tests with coverage for assignment 2
-        run: pytest Assignment-2 --cov=Assignment-2 --cov-report=xml --cov-report=html
+        run: pytest Assignment-2 -v --cov=Assignment-2 --cov-report=xml --cov-report=html
 
       - name: Upload combined coverage to Codecov
         uses: codecov/codecov-action@v4
