@@ -4,7 +4,7 @@ This assignment focuses on implementing the Direct and Geometric Stiffness Metho
 This repo contains this README, Direct_Stiffness.py, test_geometricstiffness.py, tutorials.ipynb, assignment_2_2.ipynb, pyproject.toml, and the GenAIUSE.txt.
 
 - `README.md`: This file, containing instructions.
-- `Direct_Stiffness.py`: Contains the main code for the Direct and Geometric Stiffness Method.
+- `Geometric_stiffness.py`: Contains the main code for the Direct and Geometric Stiffness Method.
 - `test_geometricstiffness.py`: Contains the test functions to be used with Pytest.
 - `tutorials.ipynb`: The Jupyter notebook containing guides.
 - `assignment_2_2.ipynb`: The Jupyter notebook containing the assignment.
