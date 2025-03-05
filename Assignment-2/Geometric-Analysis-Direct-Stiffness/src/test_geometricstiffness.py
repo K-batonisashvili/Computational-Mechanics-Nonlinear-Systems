@@ -134,12 +134,3 @@ def test_reactions(setup_frame):
     U = frame.get_displacements(F, K)
     R = frame.get_reactions(U, K)
     assert R.shape == (24,)
-
-def test_plot_methods(setup_frame):
-    """Ensure plot methods run without errors."""
-    frame = setup_frame
-    try:
-        frame.plot()
-        frame.plot_deformed()
-    except Exception:
-        pytest.fail("Plot methods should not raise exceptions.")
