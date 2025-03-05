@@ -86,6 +86,3 @@ def test_reactions():
     U = frame.get_displacements(F, K)
     R = frame.get_reactions(U, K, F)
     assert R.shape == (12,), "Reaction force vector size is incorrect"
-
-if __name__ == "__main__":
-    pytest.main()
