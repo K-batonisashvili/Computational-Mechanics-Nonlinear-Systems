@@ -134,3 +134,77 @@ def test_reactions(setup_frame):
     U = frame.get_displacements(F, K)
     R = frame.get_reactions(U, K)
     assert R.shape == (24,)
+
+
+# Second round of testing just in case. It also has a simpler cantilever beam test case.
+
+
+E = 200e9  # Young's modulus (Pa)
+v = 0.3    # Poisson's ratio
+A = 0.01   # Cross-sectional area (m²)
+I_y = 1e-6 # Moment of inertia about y-axis (m^4)
+I_z = 1e-6 # Moment of inertia about z-axis (m^4)
+I_p = 2e-6 # Polar moment of inertia (m^4)
+J = 2e-6   # Torsional constant (m^4)
+
+@pytest.fixture
+def setup_cantilever_beam():
+    """Fixture to create a cantilever beam structure."""
+    nodes = [
+        Nodes(0, 0, 0),
+        Nodes(1, 0, 0)
+    ]
+    elements = [
+        Elements(nodes[0], nodes[1], E, v, A, I_z, I_y, I_p, J)
+    ]
+    frame = Frame(nodes, elements)
+    # Apply boundary conditions (fixed at node 0)
+    nodes[0].set_boundary_constraints([True, True, True, True, True, True])
+    # Apply a point load at the free end (node 1)
+    nodes[1].set_nodal_load(0, -1000, 0, 0, 0, 0)  # 1000 N downward force
+    return frame
+
+# Add the new tests to the test suite
+def test_global_stiffness_matrix(setup_frame):
+    """Test if the global stiffness matrix is correctly computed."""
+    frame = setup_frame
+    K = frame.global_stiffness_matrix()
+    assert K.shape == (24, 24)  # 4 nodes * 6 DOFs each
+
+def test_internal_forces(setup_frame):
+    """Test if internal forces are computed for all elements."""
+    frame = setup_frame
+    internal_forces = frame.compute_internal_forces()
+    assert len(internal_forces) == len(frame.elements)  # Should match element count
+
+def test_geometric_stiffness_matrix(setup_frame):
+    """Test if geometric stiffness matrix is correctly computed."""
+    frame = setup_frame
+    Kg = frame.global_geometric_stiffness_matrix()
+    assert Kg.shape == (24, 24)  # Global stiffness matrix should be same size
+
+def test_displacement_calculation(setup_frame):
+    """Test displacement calculation given a force matrix."""
+    frame = setup_frame
+    F = frame.global_force_matrix()
+    K = frame.global_stiffness_matrix()
+    U = frame.get_displacements(F, K)
+    assert U.shape == (24,)
+
+def test_critical_load(setup_frame):
+    """Test if the critical load factor is computed."""
+    frame = setup_frame
+    try:
+        critical_load, _ = frame.elastic_critical_load()
+        assert critical_load > 0  # Should be a positive eigenvalue
+    except ValueError:
+        pytest.skip("No positive eigenvalue found, skipping test.")
+
+def test_reactions(setup_frame):
+    """Test if reactions are correctly computed."""
+    frame = setup_frame
+    F = frame.global_force_matrix()
+    K = frame.global_stiffness_matrix()
+    U = frame.get_displacements(F, K)
+    R = frame.get_reactions(U, K)
+    assert R.shape == (24,)

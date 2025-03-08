@@ -4,3 +4,4 @@ Copilot was used for the following things:
 2. Code autofill, for example the self.x = x, self.y = y...
 3. Quick tutorial generation for how to use certain methods within the main code
 4. Help in resolving local coordinate calculations, especially with variable type mismatches
+5. Plotting help
