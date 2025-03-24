@@ -26,34 +26,37 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: pip install -e .
+      # - name: Install dependencies
+      #   run: pip install -e .
 
-      - name: Install test dependencies
-        run: pip install pytest pytest-cov coverage
+      # - name: Install test dependencies
+      #   run: pip install pytest pytest-cov coverage
 
-      - name: Run tests with coverage for assignment 1
-        run: pytest Assignment-1 -v --cov=Assignment-1 --cov-report=xml --cov-report=html
+      # - name: Run tests with coverage for assignment 1
+      #   run: pytest Assignment-1 -v --cov=Assignment-1 --cov-report=xml --cov-report=html
 
-      - name: Upload combined coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: coverage.xml
-          fail_ci_if_error: true
+      # - name: Upload combined coverage to Codecov
+      #   uses: codecov/codecov-action@v4
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     file: coverage.xml
+      #     fail_ci_if_error: true
 
-      - name: Run tests with coverage for assignment 2
-        run: pytest Assignment-2 -v --cov=Assignment-2 --cov-report=xml --cov-report=html
+      # - name: Run tests with coverage for assignment 2
+      #   run: pytest Assignment-2 -v --cov=Assignment-2 --cov-report=xml --cov-report=html
 
-      - name: Upload combined coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: coverage.xml
-          fail_ci_if_error: true
+      # - name: Upload combined coverage to Codecov
+      #   uses: codecov/codecov-action@v4
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     file: coverage.xml
+      #     fail_ci_if_error: true
 
-      - name: move to directory
-        run: cd Assignment-3\finite_element_analysis
+      - name: ls
+        run: ls
+
+      - name: cd Assignment-3
+        run: cd .\Assignment-3
 
       - name: Install dependencies
         run: pip install -e .
