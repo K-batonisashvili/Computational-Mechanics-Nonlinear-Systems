@@ -52,18 +52,9 @@ jobs:
       #     file: coverage.xml
       #     fail_ci_if_error: true
 
-      - name: cd Assignment-3
-        run: cd Assignment-3\
-
-      - name: ls
-        run: ls
-
       - name: Install dependencies
-        run: pip install -e .
+        run: pip install -e .\Assignment-3
 
-      - name: Back to root directory
-        run: cd ..
-      
       - name: Run tests with coverage for assignment 3
         run: pytest Assignment-3 -v --cov=Assignment-3 --cov-report=xml --cov-report=html
 
