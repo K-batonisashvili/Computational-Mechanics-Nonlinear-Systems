@@ -52,11 +52,8 @@ jobs:
       #     file: coverage.xml
       #     fail_ci_if_error: true
 
-      - name: ls
-        run: ls
-
       - name: cd Assignment-3
-        run: cd .\Assignment-3
+        run: cd Assignment-3\finite-element-analysis
 
       - name: Install dependencies
         run: pip install -e .
