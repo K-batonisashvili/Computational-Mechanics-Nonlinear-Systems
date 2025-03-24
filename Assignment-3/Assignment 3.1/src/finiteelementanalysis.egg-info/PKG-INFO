@@ -1,0 +1,67 @@
+Metadata-Version: 2.4
+Name: finiteelementanalysis
+Version: 0.0.0
+Summary: Finite Element Analysis Intro Tutorial
+Author-email: Kote Batonisashvili <kbat6359@bu.edu>
+Project-URL: homepage, https://github.com/K-batonisashvili/Computational-Mechanics-Nonlinear-Systems/tree/main/
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+Requires-Dist: contourpy==1.3.1
+Requires-Dist: cycler==0.12.1
+Requires-Dist: fonttools==4.56.0
+Requires-Dist: gmsh==4.13.1
+Requires-Dist: iniconfig==2.0.0
+Requires-Dist: kiwisolver==1.4.8
+Requires-Dist: matplotlib==3.10.1
+Requires-Dist: numpy==2.2.3
+Requires-Dist: packaging==24.2
+Requires-Dist: pillow==11.1.0
+Requires-Dist: pluggy==1.5.0
+Requires-Dist: pyparsing==3.2.1
+Requires-Dist: pytest-cov==6.0.0
+Requires-Dist: pytest==8.3.5
+Requires-Dist: python-dateutil==2.9.0.post0
+Requires-Dist: setuptools==75.8.0
+Requires-Dist: six==1.17.0
+Requires-Dist: wheel==0.45.1
+
+# finite-element-analysis
+
+[![python](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
+![os](https://img.shields.io/badge/os-ubuntu%20|%20macos%20|%20windows-blue.svg)
+[![license](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/sandialabs/sibl#license)
+
+[![codecov](https://codecov.io/gh/Lejeune-Lab-Graduate-Course-Materials/finite-element-analysis/graph/badge.svg?token=p5DMvJ6byO)](https://codecov.io/gh/Lejeune-Lab-Graduate-Course-Materials/finite-element-analysis)
+[![tests](https://github.com/Lejeune-Lab-Graduate-Course-Materials/finite-element-analysis/actions/workflows/tests.yml/badge.svg)](https://github.com/Lejeune-Lab-Graduate-Course-Materials/finite-element-analysis/actions)
+
+
+### Conda environment, install, and testing
+
+Note: this is an extremely minimalist readme, but the code is highly documented and will get built out over the coures of assignment 3.
+
+```bash
+conda create --name finite-element-analysis-env python=3.12.9
+```
+
+```bash
+conda activate finite-element-analysis-env
+```
+
+```bash
+python --version
+```
+
+```bash
+pip install --upgrade pip setuptools wheel
+```
+
+```bash
+pip install -e .
+```
+
+```bash
+pytest -v --cov=finiteelementanalysis --cov-report term-missing
+```
+

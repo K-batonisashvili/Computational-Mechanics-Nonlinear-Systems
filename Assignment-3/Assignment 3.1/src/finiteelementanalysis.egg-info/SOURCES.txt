@@ -1,0 +1,17 @@
+README.md
+pyproject.toml
+src/finiteelementanalysis/discretization.py
+src/finiteelementanalysis/discretization_demo_helper_fcns.py
+src/finiteelementanalysis/example_functions.py
+src/finiteelementanalysis/pre_process.py
+src/finiteelementanalysis/pre_process_demo_helper_fcns.py
+src/finiteelementanalysis.egg-info/PKG-INFO
+src/finiteelementanalysis.egg-info/SOURCES.txt
+src/finiteelementanalysis.egg-info/dependency_links.txt
+src/finiteelementanalysis.egg-info/requires.txt
+src/finiteelementanalysis.egg-info/top_level.txt
+tests/test_discretization.py
+tests/test_discretization_demo_helper_fcns.py
+tests/test_example_functions.py
+tests/test_pre_process.py
+tests/test_pre_process_demo_helper_fcns.py
