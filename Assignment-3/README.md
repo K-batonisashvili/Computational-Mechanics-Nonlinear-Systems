@@ -1,4 +1,4 @@
-# Assignment # 2 Overall
+# Assignment # 3 Overall
 
 This is the main README for assignment 3.
 
