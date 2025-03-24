@@ -1,7 +1,7 @@
 """
 Project:        Direct-Stifness Matrix Method
 Author:         Kote Batonisashvili
-Description:    Assignment 2.1. Direct-Stifness Matrix Method which creates Frames with their respective Nodes and Elements.
+Description:    Assignment 2.2. Geometric-Stifness Matrix Method which creates Frames with their respective Nodes and Elements.
 """
 
 # Standard Imports
