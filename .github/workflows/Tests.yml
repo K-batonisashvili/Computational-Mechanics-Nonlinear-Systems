@@ -53,7 +53,10 @@ jobs:
       #     fail_ci_if_error: true
 
       - name: cd Assignment-3
-        run: cd Assignment-3\finite-element-analysis
+        run: cd Assignment-3\
+
+      - name: ls
+        run: ls
 
       - name: Install dependencies
         run: pip install -e .
