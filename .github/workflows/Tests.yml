@@ -55,8 +55,22 @@ jobs:
       - name: Install dependencies
         run: pip install -e Assignment-3/Part-3/finite-element-analysis
 
-      - name: Install missing dependencies
-        run: sudo apt-get update && sudo apt-get install -y libglu1-mesa
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libglu1-mesa
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install mesa
+
+      - name: Install dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          choco install opengl
   
       - name: Run tests with coverage for assignment 3
         run: pytest Assignment-3/Part-3 -v --cov=Assignment-3/Part-3 --cov-report=xml --cov-report=html
