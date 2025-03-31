@@ -82,6 +82,8 @@ While there isn't a numerical implementation of checking to see if the answers m
 
 ### Folder & Code Structure
 
+![Folder Breakdown Image](Folder_Breakdown.png)
+
 As was seen when going through full_code_example_1.py, we import a local module called `finiteelementanalysis`, which containts the entirety of our computational functions needed for conducting the analysis. This module is located in the `src` folder and contains 10 python files, each having a different purpose in computing load effects. To get a better understanding on how these files contribute, below is a very high-level breakdown on their functionalities:
 
 - visualize.py: This file contains functions for visualizing our analysis results with deformation plots, stress distributions, or animations.
