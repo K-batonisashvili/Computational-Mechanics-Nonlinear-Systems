@@ -3,7 +3,7 @@
 This is the main README for assignment 3.
 
 You will find more subfolders with their designated parts.
-- **Assignment-3-finite-element-analysis**: Main folder for FEA and relevant tools.
+- **Assignment-3-finite-element-analysis**: 2 Separate tutorial folders (Part 1 & Part 3) for FEA and relevant tools.
 
 ## How to Use
 
