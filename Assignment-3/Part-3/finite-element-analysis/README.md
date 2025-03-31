@@ -17,7 +17,7 @@ We are going to create a new conda environment for this code. The reason being i
 
 If you do not have conda installed on your computer, I will have a generic conda installation tutorial in the future. For now, please follow the commands below to create your conda environment.
 
-## Conda Environment Setup
+### Conda Environment Setup
 
 Begin by setting up a conda or mamba environment:
 ```bash
@@ -77,4 +77,44 @@ In this tutorial, we will be analyzing a rectangular shape using triangular elem
 
 Once the shape and its respective properties are defined, lines 70 through 99 perform the computation in finding the solution. This may be checked directly against an analytical solution to ensure that our code works properly. 
 
-While there isn't a numerical implementation of checking to see if the answers match, there exists a png called `uniaxial_extension_error.png` which plots the solutions of the analytical answers to the computed ones, and that should be located in the same directory. Lines 99 through 117 are what provide the visual confirmations and plots on how the rectangular frame experiences load. 
+While there isn't a numerical implementation of checking to see if the answers match, there exists a png called `uniaxial_extension_error.png` which plots the solutions of the analytical answers to the computed ones, and that should be located in the same directory. Lines 99 through 117 provide the visual confirmations and plots on how the rectangular frame experiences load. All of these files will be saved under the `tutorials` folder. 
+
+
+### Folder & Code Structure
+
+As was seen when going through full_code_example_1.py, we import a local module called `finiteelementanalysis`, which containts the entirety of our computational functions needed for conducting the analysis. This module is located in the `src` folder and contains 10 python files, each having a different purpose in computing load effects. To get a better understanding on how these files contribute, below is a very high-level breakdown on their functionalities:
+
+- visualize.py: This file contains functions for visualizing our analysis results with deformation plots, stress distributions, or animations.
+
+- solver.py: This file implements the main solver function for our problems by finding node displacements.
+
+- solver_demo_helper_functions.py: This file provides utility functions for the solver, such as constructing and visualizing the stiffness matrix.  It provides other modifications to this stiffness matrix that assist in computation.
+
+- pre_process.py: This file contains functions for preprocessing finite element models, such as generating meshes, defining boundary conditions, and preparing input data for the solver. It specifically assist in generating tri and quad type meshes.
+
+- pre_process_demo_helper_fcns.py: This file, similar to the demo_helper, provides helper functions for visualizing, debugging, plotting meshes or inspecting boundary conditions.
+
+- local_element.py: This mathematically concentrated file assists in performing computations on element load through Jacobians and matrix analysis.
+
+- example_functions.py: Test file that is not used in FEA.
+
+- discretization.py: This file defines shape functions, gauss points, and face nodes for each different element type.
+
+- discretization_demo_helper_fcns.py: This file, similar to others, provides utility type functions that assist with discretization, such as plotting, mathematical transformations, jacobian calculations, and more.
+
+- assemble_global.py: This file assembles global matrices and vectors, such as the stiffness matrix and load vector. It helps convert from local to global.
+
+
+The `tutorials` folder that we were originally working from contains several different examples on implementing these files. 
+
+- full_code_example_1.py: We already went through full_code_example_1.py and learned how to generate a basic structure with a simple mesh grid. 
+
+- full_code_example_2.py: This python example is similar to the one we discussed, however in here we see the difference in mesh analysis when using a quad element mesh instead of a triangular one. 
+
+- tutorial_discretization: This jupyter notebook provides the basics on how to create a simple quad or tri element. It provides an example of discretization demo functions mapping out physical vs natural coordinate interpolation fields. 
+
+- tutorial_mesh_quality: This jupyter notebook shows us an excellent example of how the quality of our mesh solver changes based on the number of interpolation points used. It also shows us how to create a mesh for the Boston Terrier and then the metrics of how the mesh performed. 
+
+- tutorial_sparse_solver: This jupyter notebook provides examples of sparse solvers on a rectangular frame, demonstrating the required runtime for each as well. 
+
+The `tests` folder provides pytest files used specifically to analyze the correctness of the src folder. All tests should pass when running a pytest coverage command. 
