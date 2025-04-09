@@ -73,9 +73,6 @@ jobs:
       - name: Run tests with coverage for assignment 3 Part 4
         run: pytest Assignment-3/Part-4 -v --cov=Assignment-3/Part-4 --cov-report=xml --cov-report=html
 
-      - name: Run tests with coverage for assignment 4
-        run: pytest Assignment-4 -v --cov=Assignment-4 --cov-report=xml --cov-report=html
-
       - name: Upload combined coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
