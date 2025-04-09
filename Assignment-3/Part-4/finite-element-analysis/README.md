@@ -71,6 +71,7 @@ In this part of the README, we will heavily dive into the tutorial section of ou
 ### Folder & Code Structure
 
 ![Folder Breakdown Image](Folder_Breakdown.png)
+![High-Order-Overview](FEA-High-Level-Flowchart.jpg)
 
 - visualize.py: This file contains functions for visualizing our analysis results with deformation plots, stress distributions, or animations.
 
