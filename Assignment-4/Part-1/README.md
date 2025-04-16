@@ -5,6 +5,7 @@ This is a simple repo which contains this README, FEniCSx_Tutorial.ipynb, pyproj
 
 - `README.md`: This file, containing instructions.
 - `FEniCSx_Tutorial.ipynb`: Central tutorial jupyter notebook which goes through an example of a downward force being applied on a bridge.
+- `deformation.gif`: Gif representing the deformation in our bridge example. More information on this in the tutorial.
 - `genAIuse.txt`: Contains the statement describing how AI was used for this assignment.
 - `pyproject.toml`: Contains all the requirements for getting the library setup.
 
