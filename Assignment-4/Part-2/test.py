@@ -10,7 +10,7 @@ num_elements = [50, 5, 5]  # Mesh resolution
 
 # Create a 3D bridge mesh
 domain = mesh.create_box(MPI.COMM_WORLD, [[0.0, 0.0, 0.0], [L, W, H]], num_elements, mesh.CellType.hexahedron)
-V = fem.VectorFunctionSpace(domain, ("Lagrange", 1))
+V = fem.functionspace(domain, ("Lagrange", 2, (domain.geometry.dim, )))
 
 # Boundary conditions: Fix both ends of the bridge
 def left_end(x):
@@ -27,10 +27,10 @@ bcs = [fem.dirichletbc(zero_displacement, left_dofs, V),
 
 # Material properties
 rho = 7850  # Density (kg/m^3)
-E = 2.1e11  # Young's modulus (Pa)
-nu = 0.3    # Poisson's ratio
-mu = E / (2 * (1 + nu))
-lmbda = E * nu / ((1 + nu) * (1 - 2 * nu))
+E = default_scalar_type(2.1e11)  # Young's modulus (Pa)
+nu = default_scalar_type(0.3)
+mu = fem.Constant(domain, E / (2 * (1 + nu)))
+lmbda = fem.Constant(domain, E * nu / ((1 + nu) * (1 - 2 * nu)))
 
 # Define the weak form
 u = fem.Function(V)  # Displacement
@@ -38,11 +38,11 @@ v = ufl.TestFunction(V)
 u_t = fem.Function(V)  # Velocity
 u_tt = fem.Function(V)  # Acceleration
 
-I = ufl.Identity(domain.geometry.dim)
-F = I + ufl.grad(u)
-C = F.T * F
-Ic = ufl.tr(C)
-J = ufl.det(F)
+I = ufl.variable(ufl.Identity(domain.geometry.dim))
+F = ufl.variable(I + ufl.grad(u))
+C = ufl.variable(F.T * F)
+Ic = ufl.variable(ufl.tr(C))
+J = ufl.variable(ufl.det(F))
 psi = (mu / 2) * (Ic - 3) - mu * ufl.ln(J) + (lmbda / 2) * (ufl.ln(J))**2
 P = ufl.diff(psi, F)
 
