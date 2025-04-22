@@ -1,89 +1,100 @@
-# Scaled variable
-#import pyvista
-from dolfinx import mesh, fem, plot, io, default_scalar_type
-from dolfinx.fem.petsc import LinearProblem
+from dolfinx import mesh, fem, log, plot, default_scalar_type
 from mpi4py import MPI
-import ufl
 import numpy as np
-import os  # Add this import for file existence check
+import ufl
+import pyvista
 
-L = 1
-W = 0.2
-mu = 1
-rho = 1
-delta = W / L
-gamma = 0.4 * delta**2
-beta = 1.25
-lambda_ = beta
-g = gamma
+# Bridge dimensions
+L, W, H = 10.0, 1.0, 0.5  # Length, width, height
+num_elements = [50, 5, 5]  # Mesh resolution
 
-# Paths to the mesh files
-xdmf_file = './brick_w_holes/mesh.xdmf'
-h5_file = './brick_w_holes/mesh.h5'
-
-# Debug: Print file paths
-print(f"Checking files:\nXDMF file: {xdmf_file}\nHDF5 file: {h5_file}")
-
-# Check if the required files exist
-if not os.path.exists(xdmf_file):
-    raise FileNotFoundError(f"XDMF file '{xdmf_file}' does not exist. Please check the file path.")
-if not os.path.exists(h5_file):
-    raise FileNotFoundError(f"HDF5 file '{h5_file}' does not exist. Please check the file path.")
-
-# Debug: Confirm files exist
-print("Both XDMF and HDF5 files exist. Proceeding to read the mesh.")
-
-#Mesh
-with io.XDMFFile(MPI.COMM_WORLD, xdmf_file, "r") as xdmf:
-    domain = xdmf.read_mesh(name="Grid")
-
+# Create a 3D bridge mesh
+domain = mesh.create_box(MPI.COMM_WORLD, [[0.0, 0.0, 0.0], [L, W, H]], num_elements, mesh.CellType.hexahedron)
 V = fem.VectorFunctionSpace(domain, ("Lagrange", 1))
-#Dirichlet boundary conditions
-def clamped_boundary_1(x):
-    return np.isclose(x[2], -12.5)
-def clamped_boundary_2(x):
-    return np.isclose(x[2], 12.5)
 
+# Boundary conditions: Fix both ends of the bridge
+def left_end(x):
+    return np.isclose(x[0], 0.0)
 
-fdim = domain.topology.dim - 1
-clamped_boundary1_facets = mesh.locate_entities_boundary(domain, fdim, clamped_boundary_1)
-clamped_boundary2_facets = mesh.locate_entities_boundary(domain, fdim, clamped_boundary_2)
+def right_end(x):
+    return np.isclose(x[0], L)
 
+left_dofs = fem.locate_dofs_geometrical(V, left_end)
+right_dofs = fem.locate_dofs_geometrical(V, right_end)
+zero_displacement = np.array([0.0, 0.0, 0.0], dtype=default_scalar_type)
+bcs = [fem.dirichletbc(zero_displacement, left_dofs, V),
+       fem.dirichletbc(zero_displacement, right_dofs, V)]
 
-u1_D = np.array([0, 0, 0], dtype=default_scalar_type)
-u2_D = np.array([5, 0, 0], dtype=default_scalar_type)
+# Material properties
+rho = 7850  # Density (kg/m^3)
+E = 2.1e11  # Young's modulus (Pa)
+nu = 0.3    # Poisson's ratio
+mu = E / (2 * (1 + nu))
+lmbda = E * nu / ((1 + nu) * (1 - 2 * nu))
 
-bc1 = fem.dirichletbc(u1_D, fem.locate_dofs_topological(V, fdim, clamped_boundary1_facets), V)
-bc2 = fem.dirichletbc(u2_D, fem.locate_dofs_topological(V, fdim, clamped_boundary2_facets), V)
-
-#Neumann boundary conditions
-T = fem.Constant(domain, default_scalar_type((0, 0, 0))) #Homogeneous Neumann condition
-
-
-#Boundary integral
-ds = ufl.Measure("ds", domain=domain)
-
-#Weak form
-def epsilon(u):
-    return ufl.sym(ufl.grad(u))  # Equivalent to 0.5*(ufl.nabla_grad(u) + ufl.nabla_grad(u).T)
-
-
-def sigma(u):
-    return lambda_ * ufl.nabla_div(u) * ufl.Identity(len(u)) + 2 * mu * epsilon(u)
-
-
-u = ufl.TrialFunction(V)
+# Define the weak form
+u = fem.Function(V)  # Displacement
 v = ufl.TestFunction(V)
-f = fem.Constant(domain, default_scalar_type((0, 0, 0)))        #no body force
-a = ufl.inner(sigma(u), epsilon(v)) * ufl.dx
-L = ufl.dot(f, v) * ufl.dx + ufl.dot(T, v) * ds      #Homogeneous Neumann Boundary condition
-#Solver
-problem = LinearProblem(a, L, bcs=[bc1, bc2], petsc_options={"ksp_type": "preonly", "pc_type": "lu"})
-uh = problem.solve()
+u_t = fem.Function(V)  # Velocity
+u_tt = fem.Function(V)  # Acceleration
 
+I = ufl.Identity(domain.geometry.dim)
+F = I + ufl.grad(u)
+C = F.T * F
+Ic = ufl.tr(C)
+J = ufl.det(F)
+psi = (mu / 2) * (Ic - 3) - mu * ufl.ln(J) + (lmbda / 2) * (ufl.ln(J))**2
+P = ufl.diff(psi, F)
 
-#Paraview plotting
-with io.XDMFFile(domain.comm, "result/deformation.xdmf", "w") as xdmf:
-    xdmf.write_mesh(domain)
-    uh.name = "Deformation"
-    xdmf.write_function(uh)
+# External force: Vertical force applied at the center of the bridge
+force_center = fem.Constant(domain, default_scalar_type((0.0, 0.0, -1e5)))  # Force in the negative z-direction
+ds = ufl.Measure("ds", domain=domain)
+dx = ufl.Measure("dx", domain=domain)
+F_form = rho * u_tt * v * dx + ufl.inner(ufl.grad(v), P) * dx - ufl.dot(v, force_center) * ds
+
+# Time-stepping parameters
+dt = 0.01  # Time step size
+T_end = 2.0  # Total simulation time
+num_steps = int(T_end / dt)
+
+# Solver setup
+problem = fem.petsc.NonlinearProblem(F_form, u, bcs)
+solver = fem.petsc.NewtonSolver(domain.comm, problem)
+solver.atol = 1e-8
+solver.rtol = 1e-8
+solver.convergence_criterion = "incremental"
+
+# Visualization setup
+pyvista.start_xvfb()
+plotter = pyvista.Plotter()
+plotter.open_gif("bridge_dynamics.gif", fps=10)
+
+topology, cells, geometry = plot.vtk_mesh(u.function_space)
+function_grid = pyvista.UnstructuredGrid(topology, cells, geometry)
+function_grid["u"] = np.zeros((geometry.shape[0], 3))
+function_grid.set_active_vectors("u")
+
+actor = plotter.add_mesh(function_grid, show_edges=True, lighting=False, clim=[0, 0.1])
+
+# Time-stepping loop
+log.set_log_level(log.LogLevel.INFO)
+for step in range(num_steps):
+    t = step * dt
+    print(f"Time step {step + 1}/{num_steps}, Time: {t:.2f}s")
+    
+    # Solve for the displacement
+    num_its, converged = solver.solve(u)
+    assert converged, f"Solver did not converge at step {step + 1}"
+    u.x.scatter_forward()
+
+    # Update velocity and acceleration
+    u_tt.x.array[:] = (u.x.array - u_t.x.array) / dt
+    u_t.x.array[:] = u.x.array
+
+    # Update visualization
+    function_grid["u"][:, :3] = u.x.array.reshape(geometry.shape[0], 3)
+    warped = function_grid.warp_by_vector("u", factor=1)
+    plotter.update_coordinates(warped.points, render=False)
+    plotter.write_frame()
+
+plotter.close()
