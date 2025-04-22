@@ -5,6 +5,8 @@ from dolfinx.fem.petsc import LinearProblem
 from mpi4py import MPI
 import ufl
 import numpy as np
+import os  # Add this import for file existence check
+
 L = 1
 W = 0.2
 mu = 1
@@ -14,16 +16,25 @@ gamma = 0.4 * delta**2
 beta = 1.25
 lambda_ = beta
 g = gamma
-#Mesh
-#domain = mesh.create_box(MPI.COMM_WORLD, [np.array([0, 0, 0]), np.array([L, W, W])],
-#                         [20, 6, 6], cell_type=mesh.CellType.hexahedron)
-#domain = mesh.create_box(MPI.COMM_WORLD, [np.array([0, 0, 0]), np.array([L, W, W])],
-                        #  [20, 6, 6], cell_type=mesh.CellType.tetrahedron)
 
-# domain=mesh.Mesh()
-# with io.XDMFFile('./brick_w_holes/mesh.xdmf') as infile:
-# 	infile.read(domain)
-with io.XDMFFile(MPI.COMM_WORLD, './brick_w_holes/mesh.xdmf', "r") as xdmf:
+# Paths to the mesh files
+xdmf_file = './brick_w_holes/mesh.xdmf'
+h5_file = './brick_w_holes/mesh.h5'
+
+# Debug: Print file paths
+print(f"Checking files:\nXDMF file: {xdmf_file}\nHDF5 file: {h5_file}")
+
+# Check if the required files exist
+if not os.path.exists(xdmf_file):
+    raise FileNotFoundError(f"XDMF file '{xdmf_file}' does not exist. Please check the file path.")
+if not os.path.exists(h5_file):
+    raise FileNotFoundError(f"HDF5 file '{h5_file}' does not exist. Please check the file path.")
+
+# Debug: Confirm files exist
+print("Both XDMF and HDF5 files exist. Proceeding to read the mesh.")
+
+#Mesh
+with io.XDMFFile(MPI.COMM_WORLD, xdmf_file, "r") as xdmf:
     domain = xdmf.read_mesh(name="Grid")
 
 V = fem.VectorFunctionSpace(domain, ("Lagrange", 1))
