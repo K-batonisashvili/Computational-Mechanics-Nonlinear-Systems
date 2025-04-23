@@ -5,6 +5,7 @@ from mpi4py import MPI
 import numpy as np
 import ufl
 import pyvista
+from dolfinx.geometry import BoundingBoxTree, compute_collisions_point, compute_colliding_cells
 
 # Bridge dimensions
 L, W, H = 10.0, 1.0, 0.5  # Length, width, height
@@ -104,9 +105,18 @@ for step in range(num_steps):
     # Extract computed displacement at the middle of the beam
     if domain.comm.rank == 0:
         mid_point = np.array([L / 2, W / 2, H / 2])
-        mid_disp = u.eval(mid_point)
-        print(f"Computed displacement at the middle of the beam: {mid_disp[2]:.6f} m")
-        print(f"Difference from analytical solution: {abs(mid_disp[2] - analytical_disp):.6f} m")
+        # Create a bounding box tree for the mesh
+        bb_tree = BoundingBoxTree(domain, domain.topology.dim)
+        # Find candidate cells containing the point
+        cell_candidates = compute_collisions_point(bb_tree, mid_point)
+        colliding_cells = compute_colliding_cells(domain, cell_candidates, mid_point)
+        if len(colliding_cells) > 0:
+            cell = colliding_cells[0]  # Use the first colliding cell
+            mid_disp = u.eval(mid_point, cell)
+            print(f"Computed displacement at the middle of the beam: {mid_disp[2]:.6f} m")
+            print(f"Difference from analytical solution: {abs(mid_disp[2] - analytical_disp):.6f} m")
+        else:
+            print("Midpoint is not inside the domain.")
 
     # Update velocity and acceleration
     u_tt.x.array[:] = (u.x.array - u_t.x.array) / dt
