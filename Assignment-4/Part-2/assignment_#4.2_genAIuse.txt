@@ -1,4 +1,3 @@
-GenAI was used for used in the following ways:
-1) Further explanations of UFL and FEM functions. 
+Copilot was used for used in the following ways:
+1) Proper FEM UFL implementations for their functions. 
 2) Plotting assistance 
-3) 2D/3D conversions for the structure

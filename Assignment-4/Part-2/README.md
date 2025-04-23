@@ -1,17 +1,17 @@
-# Assignment # 4.1 Tutorial for FEniCSx
-This assignment focuses on FEniCSx installation and implementation for finite element analysis of objects and structures. FEniCSx is an open-source computing platform that may be utilized for many different scientific simulations, such as PDE's, FEA, MSA, etc. Please read through this README to understand how to fully integrate FEniCSx on your system from scratch, then head over to the Tutorial Jupyter notebook which goes shows how to set up an example problem, perform computations, and visualize the results. We will be creating a simple bridge which will have a downward force applied to it. For a full idea of the example problem, please read the tutorial. 
+# Assignment # 4.2 FEniCSx Limits and Examples
+This assignment focuses on the different components of FEniCSx, its adjustability, and its failures. FEniCSx is an open-source computing platform that may be utilized for many different scientific simulations, such as PDE's, FEA, MSA, etc. Please read through this README to understand how to fully integrate FEniCSx on your system from scratch, then head over to the Tutorial Jupyter notebook which goes shows how to set up an example problem, perform computations, and visualize the results. We will be creating a simple bridge which will have a downward force applied to it. For a full idea of the example problem, please read the tutorial. 
 
 This is a simple repo which contains this README, FEniCSx_Tutorial.ipynb, pyproject.toml, and the GenAIUSE.txt.
 
 - `README.md`: This file, containing instructions.
-- `FEniCSx_Tutorial.ipynb`: Central tutorial jupyter notebook which goes through an example of a downward force being applied on a bridge.
-- `deformation.gif`: Gif representing the deformation in our bridge example. More information on this in the tutorial.
+- `FEniCSx_Analytical.ipynb`: This tutorial compares the computed solutions of the program to analytical solutions.
+- `FEniCSx_Failure.ipynb`: Examples and parameters to change to see when Fenicsx fails.
+- `FEniCSx_p_h_Mesh_Example.ipynb`: Compares the difference between fine mesh refinement to higher order p refinement.
+- `....gif`: Several different gifs which show respective deformation for each tutorial.
 - `genAIuse.txt`: Contains the statement describing how AI was used for this assignment.
 - `pyproject.toml`: Contains all the requirements for getting the library setup.
 
 ## Getting Started & SCC
-When cloning this repo, you will have `README.md`, `FEniCSx_Tutorial.ipynb` and `pyproject.toml` in the base directory. The rest of the setup for this should be fairly straightforward.
-
 We are going to create a new conda environment for this code. The reason being it is easier to keep track of all dependencies for how this runs within that conda environment. That way if you need to adjust something on your machine in the future, these installed packages will not mess with anything.
 
 Conda should already be installed during your SCC session. There is a chance you have `mamba` as opposed to `conda`, in which case please replace any of the future commands that start with `conda` into `mamba`.
