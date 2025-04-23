@@ -36,17 +36,17 @@ lmbda = fem.Constant(domain, E * nu / ((1 + nu) * (1 - 2 * nu)))
 
 # Define the weak form
 u = fem.Function(V)  # Displacement
-v = ufl.TestFunction(V)
+v = ufl.TestFunction(V) # Test function
 u_t = fem.Function(V)  # Velocity
 u_tt = fem.Function(V)  # Acceleration
 
-I = ufl.variable(ufl.Identity(domain.geometry.dim))
-F = ufl.variable(I + ufl.grad(u))
-C = ufl.variable(F.T * F)
-Ic = ufl.variable(ufl.tr(C))
-J = ufl.variable(ufl.det(F))
+I = ufl.variable(ufl.Identity(domain.geometry.dim)) 
+F = ufl.variable(I + ufl.grad(u)) 
+C = ufl.variable(F.T * F) 
+Ic = ufl.variable(ufl.tr(C)) 
+J = ufl.variable(ufl.det(F)) 
 psi = (mu / 2) * (Ic - 3) - mu * ufl.ln(J) + (lmbda / 2) * (ufl.ln(J))**2
-P = ufl.diff(psi, F)
+P = ufl.diff(psi, F) 
 
 # External force: Vertical force applied at the center of the bridge
 force_center = fem.Constant(domain, default_scalar_type((0.0, 0.0, -1e4)))  # Force in the negative z-direction
@@ -58,6 +58,18 @@ F_form = rho * ufl.dot(u_tt, v) * dx + ufl.inner(ufl.grad(v), P) * dx - ufl.dot(
 dt = 1  # Time step size
 T_end = 20.0  # Total simulation time
 num_steps = int(T_end / dt)
+
+# Analytical solution for displacement at the middle of the beam
+def analytical_displacement(L, E, I, P):
+    return (P * L**3) / (48 * E * I)
+
+# Moment of inertia for a rectangular cross-section
+I = (W * H**3) / 12
+
+# Calculate analytical displacement at the middle of the beam
+analytical_disp = analytical_displacement(L, E, I, 1e4)
+# if domain.comm.rank == 0:
+#     print(f"Analytical displacement at the middle of the beam: {analytical_disp:.6f} m")
 
 # Solver setup
 problem = NonlinearProblem(F_form, u, bcs)
@@ -88,6 +100,13 @@ for step in range(num_steps):
     num_its, converged = solver.solve(u)
     assert converged, f"Solver did not converge at step {step + 1}"
     u.x.scatter_forward()
+
+    # Extract computed displacement at the middle of the beam
+    if domain.comm.rank == 0:
+        mid_point = np.array([L / 2, W / 2, H / 2])
+        mid_disp = u.eval(mid_point)
+        print(f"Computed displacement at the middle of the beam: {mid_disp[2]:.6f} m")
+        print(f"Difference from analytical solution: {abs(mid_disp[2] - analytical_disp):.6f} m")
 
     # Update velocity and acceleration
     u_tt.x.array[:] = (u.x.array - u_t.x.array) / dt
