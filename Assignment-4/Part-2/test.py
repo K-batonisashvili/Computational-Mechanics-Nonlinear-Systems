@@ -1,4 +1,6 @@
 from dolfinx import mesh, fem, log, plot, default_scalar_type
+from dolfinx.fem.petsc import NonlinearProblem
+from dolfinx.nls.petsc import NewtonSolver
 from mpi4py import MPI
 import numpy as np
 import ufl
@@ -6,7 +8,7 @@ import pyvista
 
 # Bridge dimensions
 L, W, H = 10.0, 1.0, 0.5  # Length, width, height
-num_elements = [50, 5, 5]  # Mesh resolution
+num_elements = [24, 2, 2]  # Mesh resolution
 
 # Create a 3D bridge mesh
 domain = mesh.create_box(MPI.COMM_WORLD, [[0.0, 0.0, 0.0], [L, W, H]], num_elements, mesh.CellType.hexahedron)
@@ -27,7 +29,7 @@ bcs = [fem.dirichletbc(zero_displacement, left_dofs, V),
 
 # Material properties
 rho = 7850  # Density (kg/m^3)
-E = default_scalar_type(2.1e11)  # Young's modulus (Pa)
+E = default_scalar_type(2.1e8)  # Young's modulus (Pa)
 nu = default_scalar_type(0.3)
 mu = fem.Constant(domain, E / (2 * (1 + nu)))
 lmbda = fem.Constant(domain, E * nu / ((1 + nu) * (1 - 2 * nu)))
@@ -47,19 +49,19 @@ psi = (mu / 2) * (Ic - 3) - mu * ufl.ln(J) + (lmbda / 2) * (ufl.ln(J))**2
 P = ufl.diff(psi, F)
 
 # External force: Vertical force applied at the center of the bridge
-force_center = fem.Constant(domain, default_scalar_type((0.0, 0.0, -1e5)))  # Force in the negative z-direction
+force_center = fem.Constant(domain, default_scalar_type((0.0, 0.0, -1e4)))  # Force in the negative z-direction
 ds = ufl.Measure("ds", domain=domain)
 dx = ufl.Measure("dx", domain=domain)
-F_form = rho * u_tt * v * dx + ufl.inner(ufl.grad(v), P) * dx - ufl.dot(v, force_center) * ds
+F_form = rho * ufl.dot(u_tt, v) * dx + ufl.inner(ufl.grad(v), P) * dx - ufl.dot(v, force_center) * ds
 
 # Time-stepping parameters
-dt = 0.01  # Time step size
-T_end = 2.0  # Total simulation time
+dt = 1  # Time step size
+T_end = 20.0  # Total simulation time
 num_steps = int(T_end / dt)
 
 # Solver setup
-problem = fem.petsc.NonlinearProblem(F_form, u, bcs)
-solver = fem.petsc.NewtonSolver(domain.comm, problem)
+problem = NonlinearProblem(F_form, u, bcs)
+solver = NewtonSolver(domain.comm, problem)
 solver.atol = 1e-8
 solver.rtol = 1e-8
 solver.convergence_criterion = "incremental"
@@ -67,7 +69,7 @@ solver.convergence_criterion = "incremental"
 # Visualization setup
 pyvista.start_xvfb()
 plotter = pyvista.Plotter()
-plotter.open_gif("bridge_dynamics.gif", fps=10)
+plotter.open_gif("bridge_dynamics_p_mesh.gif", fps=10)
 
 topology, cells, geometry = plot.vtk_mesh(u.function_space)
 function_grid = pyvista.UnstructuredGrid(topology, cells, geometry)
