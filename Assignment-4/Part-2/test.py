@@ -1,131 +1,90 @@
-from dolfinx import mesh, fem, log, plot, default_scalar_type
-from dolfinx.fem.petsc import NonlinearProblem
-from dolfinx.nls.petsc import NewtonSolver
+from petsc4py import PETSc
 from mpi4py import MPI
-import numpy as np
 import ufl
-import pyvista
-from dolfinx.geometry import BoundingBoxTree, compute_collisions_point, compute_colliding_cells
+from dolfinx import mesh, fem
+from dolfinx.fem.petsc import assemble_matrix, assemble_vector, apply_lifting, create_vector, set_bc
+import numpy
+t = 0  # Start time
+T = 2  # End time
+num_steps = 20  # Number of time steps
+dt = (T - t) / num_steps  # Time step size
+alpha = 3
+beta = 1.2
 
-# Bridge dimensions
-L, W, H = 10.0, 1.0, 0.5  # Length, width, height
-num_elements = [24, 2, 2]  # Mesh resolution
+nx, ny = 5, 5
+domain = mesh.create_unit_square(MPI.COMM_WORLD, nx, ny, mesh.CellType.triangle)
+V = fem.functionspace(domain, ("Lagrange", 1))
 
-# Create a 3D bridge mesh
-domain = mesh.create_box(MPI.COMM_WORLD, [[0.0, 0.0, 0.0], [L, W, H]], num_elements, mesh.CellType.hexahedron)
-V = fem.functionspace(domain, ("Lagrange", 2, (domain.geometry.dim, )))
+class exact_solution():
+    def __init__(self, alpha, beta, t):
+        self.alpha = alpha
+        self.beta = beta
+        self.t = t
 
-# Boundary conditions: Fix both ends of the bridge
-def left_end(x):
-    return np.isclose(x[0], 0.0)
+    def __call__(self, x):
+        return 1 + x[0]**2 + self.alpha * x[1]**2 + self.beta * self.t
 
-def right_end(x):
-    return np.isclose(x[0], L)
+u_exact = exact_solution(alpha, beta, t)
 
-left_dofs = fem.locate_dofs_geometrical(V, left_end)
-right_dofs = fem.locate_dofs_geometrical(V, right_end)
-zero_displacement = np.array([0.0, 0.0, 0.0], dtype=default_scalar_type)
-bcs = [fem.dirichletbc(zero_displacement, left_dofs, V),
-       fem.dirichletbc(zero_displacement, right_dofs, V)]
+u_D = fem.Function(V)
+u_D.interpolate(u_exact)
+tdim = domain.topology.dim
+fdim = tdim - 1
+domain.topology.create_connectivity(fdim, tdim)
+boundary_facets = mesh.exterior_facet_indices(domain.topology)
+bc = fem.dirichletbc(u_D, fem.locate_dofs_topological(V, fdim, boundary_facets))
 
-# Material properties
-rho = 7850  # Density (kg/m^3)
-E = default_scalar_type(2.1e8)  # Young's modulus (Pa)
-nu = default_scalar_type(0.3)
-mu = fem.Constant(domain, E / (2 * (1 + nu)))
-lmbda = fem.Constant(domain, E * nu / ((1 + nu) * (1 - 2 * nu)))
+u_n = fem.Function(V)
+u_n.interpolate(u_exact)
 
-# Define the weak form
-u = fem.Function(V)  # Displacement
-v = ufl.TestFunction(V) # Test function
-u_t = fem.Function(V)  # Velocity
-u_tt = fem.Function(V)  # Acceleration
+f = fem.Constant(domain, beta - 2 - 2 * alpha)
 
-I = ufl.variable(ufl.Identity(domain.geometry.dim)) 
-F = ufl.variable(I + ufl.grad(u)) 
-C = ufl.variable(F.T * F) 
-Ic = ufl.variable(ufl.tr(C)) 
-J = ufl.variable(ufl.det(F)) 
-psi = (mu / 2) * (Ic - 3) - mu * ufl.ln(J) + (lmbda / 2) * (ufl.ln(J))**2
-P = ufl.diff(psi, F) 
+u, v = ufl.TrialFunction(V), ufl.TestFunction(V)
+F = u * v * ufl.dx + dt * ufl.dot(ufl.grad(u), ufl.grad(v)) * ufl.dx - (u_n + dt * f) * v * ufl.dx
+a = fem.form(ufl.lhs(F))
+L = fem.form(ufl.rhs(F))
 
-# External force: Vertical force applied at the center of the bridge
-force_center = fem.Constant(domain, default_scalar_type((0.0, 0.0, -1e4)))  # Force in the negative z-direction
-ds = ufl.Measure("ds", domain=domain)
-dx = ufl.Measure("dx", domain=domain)
-F_form = rho * ufl.dot(u_tt, v) * dx + ufl.inner(ufl.grad(v), P) * dx - ufl.dot(v, force_center) * ds
+A = assemble_matrix(a, bcs=[bc])
+A.assemble()
+b = create_vector(L)
+uh = fem.Function(V)
 
-# Time-stepping parameters
-dt = 1  # Time step size
-T_end = 20.0  # Total simulation time
-num_steps = int(T_end / dt)
+solver = PETSc.KSP().create(domain.comm)
+solver.setOperators(A)
+solver.setType(PETSc.KSP.Type.PREONLY)
+solver.getPC().setType(PETSc.PC.Type.LU)
 
-# Analytical solution for displacement at the middle of the beam
-def analytical_displacement(L, E, I, P):
-    return (P * L**3) / (48 * E * I)
+for n in range(num_steps):
+    # Update Diriclet boundary condition
+    u_exact.t += dt
+    u_D.interpolate(u_exact)
 
-# Moment of inertia for a rectangular cross-section
-I = (W * H**3) / 12
+    # Update the right hand side reusing the initial vector
+    with b.localForm() as loc_b:
+        loc_b.set(0)
+    assemble_vector(b, L)
 
-# Calculate analytical displacement at the middle of the beam
-analytical_disp = analytical_displacement(L, E, I, 1e4)
-# if domain.comm.rank == 0:
-#     print(f"Analytical displacement at the middle of the beam: {analytical_disp:.6f} m")
+    # Apply Dirichlet boundary condition to the vector
+    apply_lifting(b, [a], [[bc]])
+    b.ghostUpdate(addv=PETSc.InsertMode.ADD_VALUES, mode=PETSc.ScatterMode.REVERSE)
+    set_bc(b, [bc])
 
-# Solver setup
-problem = NonlinearProblem(F_form, u, bcs)
-solver = NewtonSolver(domain.comm, problem)
-solver.atol = 1e-8
-solver.rtol = 1e-8
-solver.convergence_criterion = "incremental"
+    # Solve linear problem
+    solver.solve(b, uh.x.petsc_vec)
+    uh.x.scatter_forward()
 
-# Visualization setup
-pyvista.start_xvfb()
-plotter = pyvista.Plotter()
-plotter.open_gif("bridge_dynamics_p_mesh.gif", fps=10)
+    # Update solution at previous time step (u_n)
+    u_n.x.array[:] = uh.x.array
 
-topology, cells, geometry = plot.vtk_mesh(u.function_space)
-function_grid = pyvista.UnstructuredGrid(topology, cells, geometry)
-function_grid["u"] = np.zeros((geometry.shape[0], 3))
-function_grid.set_active_vectors("u")
+# Compute L2 error and error at nodes
+V_ex = fem.functionspace(domain, ("Lagrange", 2))
+u_ex = fem.Function(V_ex)
+u_ex.interpolate(u_exact)
+error_L2 = numpy.sqrt(domain.comm.allreduce(fem.assemble_scalar(fem.form((uh - u_ex)**2 * ufl.dx)), op=MPI.SUM))
+if domain.comm.rank == 0:
+    print(f"L2-error: {error_L2:.2e}")
 
-actor = plotter.add_mesh(function_grid, show_edges=True, lighting=False, clim=[0, 0.1])
-
-# Time-stepping loop
-log.set_log_level(log.LogLevel.INFO)
-for step in range(num_steps):
-    t = step * dt
-    print(f"Time step {step + 1}/{num_steps}, Time: {t:.2f}s")
-    
-    # Solve for the displacement
-    num_its, converged = solver.solve(u)
-    assert converged, f"Solver did not converge at step {step + 1}"
-    u.x.scatter_forward()
-
-    # Extract computed displacement at the middle of the beam
-    if domain.comm.rank == 0:
-        mid_point = np.array([L / 2, W / 2, H / 2])
-        # Create a bounding box tree for the mesh
-        bb_tree = BoundingBoxTree(domain, domain.topology.dim)
-        # Find candidate cells containing the point
-        cell_candidates = compute_collisions_point(bb_tree, mid_point)
-        colliding_cells = compute_colliding_cells(domain, cell_candidates, mid_point)
-        if len(colliding_cells) > 0:
-            cell = colliding_cells[0]  # Use the first colliding cell
-            mid_disp = u.eval(mid_point, cell)
-            print(f"Computed displacement at the middle of the beam: {mid_disp[2]:.6f} m")
-            print(f"Difference from analytical solution: {abs(mid_disp[2] - analytical_disp):.6f} m")
-        else:
-            print("Midpoint is not inside the domain.")
-
-    # Update velocity and acceleration
-    u_tt.x.array[:] = (u.x.array - u_t.x.array) / dt
-    u_t.x.array[:] = u.x.array
-
-    # Update visualization
-    function_grid["u"][:, :3] = u.x.array.reshape(geometry.shape[0], 3)
-    warped = function_grid.warp_by_vector("u", factor=1)
-    plotter.update_coordinates(warped.points, render=False)
-    plotter.write_frame()
-
-plotter.close()
+# Compute values at mesh vertices
+error_max = domain.comm.allreduce(numpy.max(numpy.abs(uh.x.array - u_D.x.array)), op=MPI.MAX)
+if domain.comm.rank == 0:
+    print(f"Error_max: {error_max:.2e}")
