@@ -13,12 +13,12 @@ num_elements = [50, 20, 20]  # Mesh resolution
 
 # Create a 3D bridge mesh
 domain = mesh.create_box(MPI.COMM_WORLD, [[0.0, 0.0, 0.0], [L, W, H]], num_elements, mesh.CellType.hexahedron)
-V = fem.functionspace(domain, ("Lagrange", 1, (domain.geometry.dim, )))
+V = fem.functionspace(domain, ("Lagrange", 2, (domain.geometry.dim, )))
 dim = domain.topology.dim
 
 # Material properties for bridge
 rho = 800  # Density 
-E = fem.Constant(domain, 2.1e11)  
+E = fem.Constant(domain, 2.1e8)  
 nu = fem.Constant(domain, 0.3)
 mu = (E / (2 * (1 + nu)))
 lmbda = (E * nu / ((1 + nu) * (1 - 2 * nu)))
