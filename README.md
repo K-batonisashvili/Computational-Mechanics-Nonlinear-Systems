@@ -1,5 +1,5 @@
-# ME700
-Boston University ME700 Course
+# Main Repo for TDD style FEniCSx development
+Boston University
 
 [![codecov](https://codecov.io/gh/K-batonisashvili/Computational-Mechanics-Nonlinear-Systems/graph/badge.svg?token=1A0E104BIQ)](https://codecov.io/gh/K-batonisashvili/Computational-Mechanics-Nonlinear-Systems)
 
